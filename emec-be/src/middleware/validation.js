@@ -1,0 +1,61 @@
+import { body, validationResult } from 'express-validator';
+
+export const validate = (validations) => {
+  return async (req, res, next) => {
+    await Promise.all(validations.map(validation => validation.run(req)));
+
+    const errors = validationResult(req);
+    if (errors.isEmpty()) {
+      return next();
+    }
+
+    res.status(400).json({
+      success: false,
+      errors: errors.array()
+    });
+  };
+};
+
+// Common validation rules
+export const validateSupplier = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('description').optional().trim()
+];
+
+export const validateDeliveryPerson = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('description').optional().trim()
+];
+
+export const validateItemCategory = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('description').optional().trim()
+];
+
+export const validateItem = [
+  body('item_name').trim().notEmpty().withMessage('Item name is required'),
+  body('category_id').optional().isUUID().withMessage('Category ID must be a valid UUID'),
+  body('barcode').optional().trim(),
+  body('measurement_unit').optional().trim()
+];
+
+export const validatePurchase = [
+  body('bill_number').trim().notEmpty().withMessage('Bill number is required'),
+  body('supplier_id').isUUID().withMessage('Supplier ID must be a valid UUID'),
+  body('purchase_date').isISO8601().withMessage('Valid purchase date is required'),
+  body('items').isArray().notEmpty().withMessage('At least one item is required')
+];
+
+export const validateSale = [
+  body('bill_number').trim().notEmpty().withMessage('Bill number is required'),
+  body('sale_date').isISO8601().withMessage('Valid sale date is required'),
+  body('items').isArray().notEmpty().withMessage('At least one item is required'),
+  body('payment_method').isIn(['cash', 'card', 'bank_transfer', 'cheque']).withMessage('Valid payment method is required')
+];
+
+export const validateQuotation = [
+  body('quotation_number').trim().notEmpty().withMessage('Quotation number is required'),
+  body('quotation_date').isISO8601().withMessage('Valid quotation date is required'),
+  body('items').isArray().notEmpty().withMessage('At least one item is required')
+];
+
