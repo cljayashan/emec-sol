@@ -47,9 +47,28 @@ DB_USER=root
 DB_PASSWORD=123
 DB_NAME=emec_db
 PORT=3000
+ACCESS_TOKEN_SECRET=your-super-secret-access-token-key-change-in-production
+REFRESH_TOKEN_SECRET=your-super-secret-refresh-token-key-change-in-production
+ACCESS_TOKEN_EXPIRY=15m
+REFRESH_TOKEN_EXPIRY=7d
 ```
 
-4. Start the backend server:
+**Important:** Change the JWT secrets to strong, random strings in production!
+
+4. Create initial admin user:
+```bash
+npm run create-admin
+```
+
+This will create an admin user with:
+- Username: `admin`
+- Password: `admin`
+- Email: `admin@emec.com`
+- Role: `admin`
+
+**⚠️ IMPORTANT:** Change the default password after first login!
+
+5. Start the backend server:
 ```bash
 npm start
 ```

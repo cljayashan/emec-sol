@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 
 // Routes
+import authRoutes from './routes/authRoutes.js';
 import supplierRoutes from './routes/supplierRoutes.js';
 import deliveryPersonRoutes from './routes/deliveryPersonRoutes.js';
 import itemCategoryRoutes from './routes/itemCategoryRoutes.js';
@@ -27,7 +28,10 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Routes
+// Public Routes
+app.use('/api/auth', authRoutes);
+
+// Protected Routes (add authenticate middleware as needed)
 app.use('/api/suppliers', supplierRoutes);
 app.use('/api/delivery-persons', deliveryPersonRoutes);
 app.use('/api/item-categories', itemCategoryRoutes);
