@@ -25,10 +25,18 @@ const SupplierList = () => {
     try {
       setLoading(true);
       const response = await supplierService.getAll(currentPage, itemsPerPage);
-      setSuppliers(response.data.data.data);
-      setTotalItems(response.data.data.total);
+      console.log('Suppliers response:', response.data);
+      if (response.data.success) {
+        setSuppliers(response.data.data.data || []);
+        setTotalItems(response.data.data.total || 0);
+      } else {
+        toast.error(response.data.message || 'Failed to load suppliers');
+      }
     } catch (error) {
-      toast.error('Failed to load suppliers');
+      console.error('Error loading suppliers:', error);
+      console.error('Error response:', error.response?.data);
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to load suppliers';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

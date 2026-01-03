@@ -20,10 +20,17 @@ export const useForm = (initialValues = {}) => {
   };
 
   const setValue = (name, value) => {
-    setValues({
-      ...values,
+    setValues(prev => ({
+      ...prev,
       [name]: value
-    });
+    }));
+  };
+
+  const setValuesDirect = (newValues) => {
+    setValues(prev => ({
+      ...prev,
+      ...newValues
+    }));
   };
 
   const reset = () => {
@@ -36,6 +43,7 @@ export const useForm = (initialValues = {}) => {
     errors,
     handleChange,
     setValue,
+    setValues: setValuesDirect,
     setErrors,
     reset
   };

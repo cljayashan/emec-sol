@@ -3,10 +3,13 @@ import { generateUUID } from '../utils/uuid.js';
 
 class Sale {
   static async findAll(page = 1, limit = 10) {
-    const offset = (page - 1) * limit;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 10));
+    const offset = Math.max(0, (pageNum - 1) * limitNum);
+    
+    // MySQL2 requires LIMIT values to be numbers, not placeholders
     const [rows] = await pool.execute(
-      `SELECT * FROM sale_bills WHERE is_deleted = 0 ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-      [limit, offset]
+      `SELECT * FROM sale_bills WHERE is_deleted = 0 ORDER BY created_at DESC LIMIT ${offset}, ${limitNum}`
     );
     const [count] = await pool.execute(
       `SELECT COUNT(*) as total FROM sale_bills WHERE is_deleted = 0`

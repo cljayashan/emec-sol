@@ -3,7 +3,9 @@ import { generateUUID } from '../utils/uuid.js';
 
 class Purchase {
   static async findAll(page = 1, limit = 10, filters = {}) {
-    const offset = (page - 1) * limit;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 10));
+    const offset = Math.max(0, (pageNum - 1) * limitNum);
     let query = `SELECT pb.*, s.name as supplier_name 
                  FROM purchase_bills pb 
                  LEFT JOIN suppliers s ON pb.supplier_id = s.id 
@@ -20,8 +22,8 @@ class Purchase {
       params.push(filters.date);
     }
 
-    query += ` ORDER BY pb.created_at DESC LIMIT ? OFFSET ?`;
-    params.push(limit, offset);
+    // MySQL2 requires LIMIT values to be numbers, not placeholders
+    query += ` ORDER BY pb.created_at DESC LIMIT ${offset}, ${limitNum}`;
 
     const [rows] = await pool.execute(query, params);
     

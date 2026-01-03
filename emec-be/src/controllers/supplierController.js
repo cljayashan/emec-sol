@@ -5,21 +5,31 @@ export const getAllSuppliers = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    console.log('Fetching suppliers - page:', page, 'limit:', limit);
     const result = await Supplier.findAll(page, limit);
+    console.log('Suppliers found:', result.data.length, 'total:', result.total);
     sendSuccess(res, result, 'Suppliers retrieved successfully');
   } catch (error) {
+    console.error('Error in getAllSuppliers:', error);
+    console.error('Error stack:', error.stack);
     next(error);
   }
 };
 
 export const getSupplierById = async (req, res, next) => {
   try {
-    const supplier = await Supplier.findById(req.params.id);
+    const supplierId = req.params.id;
+    console.log('Fetching supplier by ID:', supplierId);
+    const supplier = await Supplier.findById(supplierId);
     if (!supplier) {
+      console.log('Supplier not found:', supplierId);
       return sendError(res, 'Supplier not found', 404);
     }
+    console.log('Supplier found:', supplier);
     sendSuccess(res, supplier, 'Supplier retrieved successfully');
   } catch (error) {
+    console.error('Error in getSupplierById:', error);
+    console.error('Error stack:', error.stack);
     next(error);
   }
 };

@@ -3,7 +3,9 @@ import { generateUUID } from '../utils/uuid.js';
 
 class Stock {
   static async findAll(page = 1, limit = 10, itemId = null) {
-    const offset = (page - 1) * limit;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 10));
+    const offset = Math.max(0, (pageNum - 1) * limitNum);
     let query = `SELECT s.*, i.item_name, i.brand, i.measurement_unit 
                  FROM stock s 
                  LEFT JOIN items i ON s.item_id = i.id 
@@ -15,8 +17,8 @@ class Stock {
       params.push(itemId);
     }
 
-    query += ` ORDER BY s.created_at DESC LIMIT ? OFFSET ?`;
-    params.push(limit, offset);
+    // MySQL2 requires LIMIT values to be numbers, not placeholders
+    query += ` ORDER BY s.created_at DESC LIMIT ${offset}, ${limitNum}`;
 
     const [rows] = await pool.execute(query, params);
     
