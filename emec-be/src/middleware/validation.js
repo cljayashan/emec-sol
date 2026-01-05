@@ -43,6 +43,17 @@ export const validateVehicleModel = [
   body('description').optional().trim()
 ];
 
+export const validateVehicle = [
+  body('customer').trim().notEmpty().withMessage('Customer is required'),
+  body('vehicle_type').optional().trim(),
+  body('reg_no').trim().notEmpty().withMessage('Registration number is required'),
+  body('brand_id').trim().notEmpty().isUUID().withMessage('Brand ID is required and must be a valid UUID'),
+  body('model_id').trim().notEmpty().isUUID().withMessage('Model ID is required and must be a valid UUID'),
+  body('version').optional().trim(),
+  body('year_of_manufacture').optional().isInt({ min: 1900, max: 2100 }).withMessage('Year of manufacture must be a valid year'),
+  body('year_of_registration').optional().isInt({ min: 1900, max: 2100 }).withMessage('Year of registration must be a valid year')
+];
+
 export const validateItem = [
   body('item_name').trim().notEmpty().withMessage('Item name is required'),
   body('category_id').optional().isUUID().withMessage('Category ID must be a valid UUID'),

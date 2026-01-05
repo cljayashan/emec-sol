@@ -27,6 +27,14 @@ const Sidebar = () => {
       ]
     },
     {
+      key: 'workshop',
+      label: 'Workshop',
+      icon: '🔧',
+      children: [
+        { path: '/vehicles', label: 'Register Vehicle' }
+      ]
+    },
+    {
       key: 'transactions',
       label: 'Transactions',
       icon: '💰',
