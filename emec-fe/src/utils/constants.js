@@ -66,3 +66,15 @@ export const VEHICLE_TYPES = [
   'Mopped'
 ];
 
+export const VEHICLE_REGISTRATION_PREFIXES = [
+  'WP',  // Western Province
+  'SP',  // Southern Province
+  'CP',  // Central Province
+  'EP',  // Eastern Province
+  'NP',  // Northern Province
+  'NW', // North Western Province
+  'NC', // North Central Province
+  'UP',  // Uva Province
+  'SG'  // Sabaragamuwa Province
+];
+

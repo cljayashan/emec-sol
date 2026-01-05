@@ -7,7 +7,7 @@ import { vehicleModelService } from '../../services/vehicleModelService';
 import { customerService } from '../../services/customerService';
 import { useForm } from '../../hooks/useForm';
 import AutoComplete from '../common/AutoComplete';
-import { VEHICLE_TYPES } from '../../utils/constants';
+import { VEHICLE_TYPES, VEHICLE_REGISTRATION_PREFIXES } from '../../utils/constants';
 
 const VehicleForm = () => {
   const { id } = useParams();
@@ -35,6 +35,8 @@ const VehicleForm = () => {
   const [selectedVehicleType, setSelectedVehicleType] = useState(null);
   const [selectedYearOfManufacture, setSelectedYearOfManufacture] = useState(null);
   const [selectedYearOfRegistration, setSelectedYearOfRegistration] = useState(null);
+  const [regPrefix, setRegPrefix] = useState('');
+  const [regNumber, setRegNumber] = useState('');
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [customerFormData, setCustomerFormData] = useState({
     full_name: '',
@@ -245,6 +247,30 @@ const VehicleForm = () => {
           year_of_registration: vehicle.year_of_registration || '',
           remarks: vehicle.remarks || ''
         });
+        
+        // Split registration number into prefix and number
+        if (vehicle.reg_no) {
+          const parts = vehicle.reg_no.split(' ');
+          if (parts.length >= 2) {
+            setRegPrefix(parts[0]);
+            setRegNumber(parts.slice(1).join(' '));
+          } else {
+            // If no space, check if it starts with a known prefix
+            const foundPrefix = VEHICLE_REGISTRATION_PREFIXES.find(prefix => 
+              vehicle.reg_no.toUpperCase().startsWith(prefix)
+            );
+            if (foundPrefix) {
+              setRegPrefix(foundPrefix);
+              setRegNumber(vehicle.reg_no.substring(foundPrefix.length).trim());
+            } else {
+              setRegPrefix('');
+              setRegNumber(vehicle.reg_no);
+            }
+          }
+        } else {
+          setRegPrefix('');
+          setRegNumber('');
+        }
       } else {
         toast.error('Failed to load vehicle data');
         navigate('/vehicles');
@@ -262,8 +288,14 @@ const VehicleForm = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Combine prefix and number to form full registration number
+      const fullRegNo = regPrefix && regNumber 
+        ? `${regPrefix} ${regNumber}`.trim()
+        : regNumber || regPrefix;
+      
       const data = {
         ...values,
+        reg_no: fullRegNo,
         year_of_manufacture: values.year_of_manufacture ? parseInt(values.year_of_manufacture) : null,
         year_of_registration: values.year_of_registration ? parseInt(values.year_of_registration) : null
       };
@@ -360,15 +392,37 @@ const VehicleForm = () => {
         
         <div className="form-group">
           <label>Registration Number *</label>
-          <input
-            type="text"
-            name="reg_no"
-            value={values.reg_no || ''}
-            onChange={handleChange}
-            required
-            disabled={loading}
-            placeholder="e.g., ABC-1234"
-          />
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+            <div style={{ width: '120px' }}>
+              <label style={{ fontSize: '12px', marginBottom: '5px', display: 'block', color: '#666' }}>Prefix</label>
+              <select
+                value={regPrefix}
+                onChange={(e) => setRegPrefix(e.target.value)}
+                required
+                disabled={loading}
+                className="form-group input"
+                style={{ width: '100%' }}
+              >
+                <option value="">Select</option>
+                {VEHICLE_REGISTRATION_PREFIXES.map(prefix => (
+                  <option key={prefix} value={prefix}>{prefix}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '12px', marginBottom: '5px', display: 'block', color: '#666' }}>Number</label>
+              <input
+                type="text"
+                value={regNumber}
+                onChange={(e) => setRegNumber(e.target.value)}
+                required
+                disabled={loading}
+                placeholder="e.g., BJB 2929"
+                className="form-group input"
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="form-group">
