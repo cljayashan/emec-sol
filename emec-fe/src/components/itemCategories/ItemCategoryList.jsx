@@ -12,6 +12,7 @@ const ItemCategoryList = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 10;
   const navigate = useNavigate();
   const { isOpen, message, confirm, handleConfirm, handleCancel } = useConfirm();
@@ -19,12 +20,12 @@ const ItemCategoryList = () => {
 
   useEffect(() => {
     loadCategories();
-  }, [currentPage]);
+  }, [currentPage, searchTerm]);
 
   const loadCategories = async () => {
     try {
       setLoading(true);
-      const response = await itemCategoryService.getAll(currentPage, itemsPerPage);
+      const response = await itemCategoryService.getAll(currentPage, itemsPerPage, searchTerm);
       setCategories(response.data.data.data);
       setTotalItems(response.data.data.total);
     } catch (error) {
@@ -73,6 +74,16 @@ const ItemCategoryList = () => {
         <button className="btn btn-primary" onClick={() => navigate('/item-categories/new')}>
           Add New Category
         </button>
+      </div>
+      
+      <div style={{ marginBottom: '20px' }}>
+        <input
+          type="text"
+          placeholder="Search by name or description..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ padding: '8px', width: '300px', border: '1px solid #ddd', borderRadius: '4px' }}
+        />
       </div>
       
       {loading ? (

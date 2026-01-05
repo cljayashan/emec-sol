@@ -5,7 +5,8 @@ export const getAllItemCategories = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const result = await ItemCategory.findAll(page, limit);
+    const search = req.query.search || '';
+    const result = await ItemCategory.findAll(page, limit, search);
     sendSuccess(res, result, 'Item categories retrieved successfully');
   } catch (error) {
     next(error);

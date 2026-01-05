@@ -2,17 +2,26 @@ import pool from '../config/database.js';
 import { generateUUID } from '../utils/uuid.js';
 
 class ItemCategory {
-  static async findAll(page = 1, limit = 10) {
+  static async findAll(page = 1, limit = 10, search = '') {
     const pageNum = Math.max(1, parseInt(page) || 1);
     const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 10));
     const offset = Math.max(0, (pageNum - 1) * limitNum);
     
+    let query = `SELECT * FROM item_categories WHERE is_deleted = 0`;
+    const params = [];
+
+    if (search) {
+      query += ` AND (name LIKE ? OR description LIKE ?)`;
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
     // MySQL2 requires LIMIT values to be numbers, not placeholders
-    const [rows] = await pool.execute(
-      `SELECT * FROM item_categories WHERE is_deleted = 0 ORDER BY created_at DESC LIMIT ${offset}, ${limitNum}`
-    );
+    query += ` ORDER BY created_at DESC LIMIT ${offset}, ${limitNum}`;
+
+    const [rows] = await pool.execute(query, params);
     const [count] = await pool.execute(
-      `SELECT COUNT(*) as total FROM item_categories WHERE is_deleted = 0`
+      `SELECT COUNT(*) as total FROM item_categories WHERE is_deleted = 0${search ? ` AND (name LIKE ? OR description LIKE ?)` : ''}`,
+      search ? [`%${search}%`, `%${search}%`] : []
     );
     return { data: rows, total: count[0].total };
   }
