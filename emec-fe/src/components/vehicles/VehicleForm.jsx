@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { vehicleService } from '../../services/vehicleService';
@@ -7,6 +7,7 @@ import { vehicleModelService } from '../../services/vehicleModelService';
 import { customerService } from '../../services/customerService';
 import { useForm } from '../../hooks/useForm';
 import AutoComplete from '../common/AutoComplete';
+import { VEHICLE_TYPES } from '../../utils/constants';
 
 const VehicleForm = () => {
   const { id } = useParams();
@@ -30,6 +31,12 @@ const VehicleForm = () => {
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [selectedModel, setSelectedModel] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedVehicleType, setSelectedVehicleType] = useState(null);
+
+  // Transform vehicle types array into objects for AutoComplete
+  const vehicleTypesList = useMemo(() => {
+    return VEHICLE_TYPES.map(type => ({ name: type }));
+  }, []);
 
   useEffect(() => {
     loadBrands();
@@ -50,6 +57,18 @@ const VehicleForm = () => {
       setSelectedCustomer(null);
     }
   }, [customers, values.customer]);
+
+  useEffect(() => {
+    // Update selected vehicle type when vehicle_type value changes
+    if (values.vehicle_type) {
+      const vehicleType = vehicleTypesList.find(vt => vt.name === values.vehicle_type);
+      if (vehicleType && (!selectedVehicleType || selectedVehicleType.name !== vehicleType.name)) {
+        setSelectedVehicleType(vehicleType);
+      }
+    } else {
+      setSelectedVehicleType(null);
+    }
+  }, [values.vehicle_type, vehicleTypesList]);
 
   useEffect(() => {
     // Update selected brand when brands are loaded and we have a brand_id
@@ -227,13 +246,20 @@ const VehicleForm = () => {
 
         <div className="form-group">
           <label>Vehicle Type</label>
-          <input
-            type="text"
-            name="vehicle_type"
-            value={values.vehicle_type || ''}
-            onChange={handleChange}
-            placeholder="e.g., Car, Motorcycle, Truck"
-            disabled={loading}
+          <AutoComplete
+            items={vehicleTypesList}
+            onSelect={(vehicleType) => {
+              if (vehicleType) {
+                setSelectedVehicleType(vehicleType);
+                setValue('vehicle_type', vehicleType.name);
+              } else {
+                setSelectedVehicleType(null);
+                setValue('vehicle_type', '');
+              }
+            }}
+            placeholder="Search vehicle type..."
+            searchKey="name"
+            value={selectedVehicleType?.name || values.vehicle_type || ''}
           />
         </div>
         

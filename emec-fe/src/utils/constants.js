@@ -57,3 +57,12 @@ export const MEASUREMENT_UNITS = [
   'Case'
 ];
 
+export const VEHICLE_TYPES = [
+  'Car',
+  'Van',
+  'Three Wheeler',
+  'Motorbike',
+  'Scooter',
+  'Mopped'
+];
+
