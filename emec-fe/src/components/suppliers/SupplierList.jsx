@@ -3,28 +3,41 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { supplierService } from '../../services/supplierService';
 import DataGrid from '../common/DataGrid';
+import { PaginationFilters } from '../common/PaginationControls';
 import Paginator from '../common/Paginator';
 import ConfirmDialog from '../common/ConfirmDialog';
 import { useConfirm } from '../../hooks/useConfirm';
+import { useTablePagination } from '../../hooks/useTablePagination';
 
 const SupplierList = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const itemsPerPage = 10;
   const navigate = useNavigate();
   const { isOpen, message, confirm, handleConfirm, handleCancel } = useConfirm();
   const [deleteId, setDeleteId] = useState(null);
+  
+  const {
+    currentPage,
+    itemsPerPage,
+    searchTerm,
+    totalItems,
+    setTotalItems,
+    setSearchTerm,
+    setItemsPerPage,
+    setCurrentPage
+  } = useTablePagination({
+    initialItemsPerPage: 10,
+    enableSearch: true
+  });
 
   useEffect(() => {
     loadSuppliers();
-  }, [currentPage]);
+  }, [currentPage, itemsPerPage, searchTerm]);
 
   const loadSuppliers = async () => {
     try {
       setLoading(true);
-      const response = await supplierService.getAll(currentPage, itemsPerPage);
+      const response = await supplierService.getAll(currentPage, itemsPerPage, searchTerm);
       console.log('Full API response:', response);
       console.log('Response.data:', response.data);
       console.log('Response.data.data:', response.data?.data);
@@ -100,6 +113,16 @@ const SupplierList = () => {
           Add New Supplier
         </button>
       </div>
+      
+      <PaginationFilters
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search by supplier name..."
+        showSearch={true}
+        showItemsPerPage={true}
+      />
       
       {loading ? (
         <p>Loading...</p>

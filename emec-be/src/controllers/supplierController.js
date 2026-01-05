@@ -5,8 +5,9 @@ export const getAllSuppliers = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    console.log('Fetching suppliers - page:', page, 'limit:', limit);
-    const result = await Supplier.findAll(page, limit);
+    const search = req.query.search || '';
+    console.log('Fetching suppliers - page:', page, 'limit:', limit, 'search:', search);
+    const result = await Supplier.findAll(page, limit, search);
     console.log('Suppliers found:', result.data.length, 'total:', result.total);
     sendSuccess(res, result, 'Suppliers retrieved successfully');
   } catch (error) {
