@@ -22,6 +22,7 @@ const Sidebar = () => {
         { path: '/delivery-persons', label: 'Delivery Persons' },
         { path: '/item-categories', label: 'Item Categories' },
         { path: '/brands', label: 'Vehicle Brands' },
+        { path: '/vehicle-models', label: 'Vehicle Models' },
         { path: '/items', label: 'Items' }
       ]
     },

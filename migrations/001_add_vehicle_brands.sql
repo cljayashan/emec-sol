@@ -1,4 +1,5 @@
 -- Migration: Add vehicle_brands table and update items table
+-- Version: 001
 -- Run this migration to add vehicle brand support
 -- IMPORTANT: Run this script in your MySQL client (e.g., MySQL Workbench, phpMyAdmin, or command line)
 
