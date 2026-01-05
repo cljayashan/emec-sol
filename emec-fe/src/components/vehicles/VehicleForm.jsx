@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { vehicleService } from '../../services/vehicleService';
 import { brandService } from '../../services/brandService';
 import { vehicleModelService } from '../../services/vehicleModelService';
+import { customerService } from '../../services/customerService';
 import { useForm } from '../../hooks/useForm';
 import AutoComplete from '../common/AutoComplete';
 
@@ -25,15 +26,30 @@ const VehicleForm = () => {
   const [loadingData, setLoadingData] = useState(false);
   const [brands, setBrands] = useState([]);
   const [models, setModels] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [selectedModel, setSelectedModel] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   useEffect(() => {
     loadBrands();
+    loadCustomers();
     if (isEdit && id) {
       loadVehicle();
     }
   }, [id]);
+
+  useEffect(() => {
+    // Update selected customer when customers are loaded and we have a customer name
+    if (customers.length > 0 && values.customer) {
+      const customer = customers.find(c => c.full_name === values.customer);
+      if (customer && (!selectedCustomer || selectedCustomer.id !== customer.id)) {
+        setSelectedCustomer(customer);
+      }
+    } else if (!values.customer) {
+      setSelectedCustomer(null);
+    }
+  }, [customers, values.customer]);
 
   useEffect(() => {
     // Update selected brand when brands are loaded and we have a brand_id
@@ -77,6 +93,15 @@ const VehicleForm = () => {
       setBrands(response.data.data.data);
     } catch (error) {
       toast.error('Failed to load vehicle brands');
+    }
+  };
+
+  const loadCustomers = async () => {
+    try {
+      const response = await customerService.getAll(1, 1000);
+      setCustomers(response.data.data.data);
+    } catch (error) {
+      toast.error('Failed to load customers');
     }
   };
 
@@ -177,13 +202,26 @@ const VehicleForm = () => {
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Customer *</label>
-          <input
-            type="text"
-            name="customer"
-            value={values.customer || ''}
-            onChange={handleChange}
-            required
-            disabled={loading}
+          <AutoComplete
+            items={customers}
+            onSelect={(customer) => {
+              if (customer) {
+                setSelectedCustomer(customer);
+                setValue('customer', customer.full_name);
+              } else {
+                setSelectedCustomer(null);
+                setValue('customer', '');
+              }
+            }}
+            placeholder="Search customer..."
+            searchKey="full_name"
+            value={selectedCustomer?.full_name || values.customer || ''}
+            renderItem={(customer) => {
+              const mobile = customer.mobile1 || '';
+              const nic = customer.nic || '';
+              const parts = [customer.full_name, mobile, nic].filter(part => part);
+              return parts.join(' | ');
+            }}
           />
         </div>
 

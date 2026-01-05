@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 'name', value = '' }) => {
+const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 'name', value = '', renderItem }) => {
   const [searchTerm, setSearchTerm] = useState(value);
   const [filteredItems, setFilteredItems] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -12,9 +12,14 @@ const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 
 
   useEffect(() => {
     if (searchTerm) {
-      const filtered = items.filter((item) =>
-        item[searchKey]?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const filtered = items.filter((item) => {
+        // If renderItem is provided, search in the rendered text, otherwise use searchKey
+        if (renderItem) {
+          const displayText = renderItem(item).toLowerCase();
+          return displayText.includes(searchTerm.toLowerCase());
+        }
+        return item[searchKey]?.toLowerCase().includes(searchTerm.toLowerCase());
+      });
       setFilteredItems(filtered);
       setShowDropdown(true);
     } else {
@@ -22,7 +27,7 @@ const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 
       setFilteredItems(items);
       setShowDropdown(false);
     }
-  }, [searchTerm, items, searchKey]);
+  }, [searchTerm, items, searchKey, renderItem]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -98,7 +103,7 @@ const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 
               onMouseEnter={(e) => (e.target.style.backgroundColor = '#f0f0f0')}
               onMouseLeave={(e) => (e.target.style.backgroundColor = 'white')}
             >
-              {item[searchKey]}
+              {renderItem ? renderItem(item) : item[searchKey]}
             </div>
           ))}
         </div>
