@@ -77,7 +77,6 @@ const PurchaseList = () => {
   };
 
   const columns = [
-    { key: 'id', label: 'ID' },
     { key: 'bill_number', label: 'Bill Number' },
     { key: 'supplier_name', label: 'Supplier' },
     { key: 'purchase_date', label: 'Date', render: (val) => formatDate(val) },

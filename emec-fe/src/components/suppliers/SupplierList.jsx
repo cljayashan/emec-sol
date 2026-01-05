@@ -25,16 +25,34 @@ const SupplierList = () => {
     try {
       setLoading(true);
       const response = await supplierService.getAll(currentPage, itemsPerPage);
-      console.log('Suppliers response:', response.data);
-      if (response.data.success) {
-        setSuppliers(response.data.data.data || []);
-        setTotalItems(response.data.data.total || 0);
+      console.log('Full API response:', response);
+      console.log('Response.data:', response.data);
+      console.log('Response.data.data:', response.data?.data);
+      
+      if (response.data && response.data.success) {
+        // Backend returns: { success: true, data: { data: [...], total: ... } }
+        const responseData = response.data.data;
+        const suppliersData = Array.isArray(responseData) ? responseData : (responseData?.data || []);
+        const total = responseData?.total || (Array.isArray(responseData) ? responseData.length : 0);
+        
+        console.log('Suppliers array:', suppliersData);
+        console.log('Total items:', total);
+        console.log('Suppliers count:', suppliersData.length);
+        
+        setSuppliers(suppliersData);
+        setTotalItems(total);
+        
+        if (suppliersData.length === 0) {
+          console.warn('No suppliers found in response');
+        }
       } else {
-        toast.error(response.data.message || 'Failed to load suppliers');
+        console.error('Invalid response structure:', response.data);
+        toast.error(response.data?.message || 'Failed to load suppliers');
       }
     } catch (error) {
       console.error('Error loading suppliers:', error);
-      console.error('Error response:', error.response?.data);
+      console.error('Error response:', error.response);
+      console.error('Error response data:', error.response?.data);
       const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to load suppliers';
       toast.error(errorMessage);
     } finally {
@@ -64,7 +82,6 @@ const SupplierList = () => {
   };
 
   const columns = [
-    { key: 'id', label: 'ID' },
     { key: 'name', label: 'Name' },
     { key: 'description', label: 'Description' }
   ];
@@ -88,13 +105,24 @@ const SupplierList = () => {
         <p>Loading...</p>
       ) : (
         <>
-          <DataGrid columns={columns} data={suppliers} actions={actions} onAction={handleAction} />
-          <Paginator
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
-          />
+          {suppliers.length === 0 ? (
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              <p>No suppliers found.</p>
+              <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
+                Debug: suppliers array length = {suppliers.length}, totalItems = {totalItems}
+              </p>
+            </div>
+          ) : (
+            <>
+              <DataGrid columns={columns} data={suppliers} actions={actions} onAction={handleAction} />
+              <Paginator
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                currentPage={currentPage}
+                onPageChange={setCurrentPage}
+              />
+            </>
+          )}
         </>
       )}
       

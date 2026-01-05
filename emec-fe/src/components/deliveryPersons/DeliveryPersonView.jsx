@@ -39,9 +39,6 @@ const DeliveryPersonView = () => {
       
       <div style={{ display: 'grid', gap: '15px' }}>
         <div>
-          <strong>ID:</strong> {deliveryPerson.id}
-        </div>
-        <div>
           <strong>Name:</strong> {deliveryPerson.name}
         </div>
         <div>

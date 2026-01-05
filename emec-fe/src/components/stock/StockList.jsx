@@ -47,7 +47,6 @@ const StockList = () => {
   };
 
   const columns = [
-    { key: 'id', label: 'ID' },
     { key: 'item_name', label: 'Item Name' },
     { key: 'batch_number', label: 'Batch Number' },
     { key: 'quantity', label: 'Quantity', render: (val) => parseFloat(val || 0).toFixed(2) },

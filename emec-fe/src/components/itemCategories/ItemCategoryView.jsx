@@ -39,9 +39,6 @@ const ItemCategoryView = () => {
       
       <div style={{ display: 'grid', gap: '15px' }}>
         <div>
-          <strong>ID:</strong> {category.id}
-        </div>
-        <div>
           <strong>Name:</strong> {category.name}
         </div>
         <div>

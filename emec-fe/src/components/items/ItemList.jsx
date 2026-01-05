@@ -57,7 +57,6 @@ const ItemList = () => {
   };
 
   const columns = [
-    { key: 'id', label: 'ID' },
     { key: 'item_name', label: 'Item Name' },
     { key: 'brand', label: 'Brand' },
     { key: 'category_name', label: 'Category' },

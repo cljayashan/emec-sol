@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { itemService } from '../../services/itemService';
 import { itemCategoryService } from '../../services/itemCategoryService';
 import { useForm } from '../../hooks/useForm';
+import AutoComplete from '../common/AutoComplete';
 
 const ItemForm = () => {
   const { id } = useParams();
@@ -19,6 +20,7 @@ const ItemForm = () => {
   });
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
     loadCategories();
@@ -26,6 +28,18 @@ const ItemForm = () => {
       loadItem();
     }
   }, [id]);
+
+  useEffect(() => {
+    // Update selected category when categories are loaded and we have a category_id
+    if (categories.length > 0 && values.category_id) {
+      const category = categories.find(cat => cat.id === values.category_id);
+      if (category && (!selectedCategory || selectedCategory.id !== category.id)) {
+        setSelectedCategory(category);
+      }
+    } else if (!values.category_id) {
+      setSelectedCategory(null);
+    }
+  }, [categories, values.category_id]);
 
   const loadCategories = async () => {
     try {
@@ -114,18 +128,21 @@ const ItemForm = () => {
         
         <div className="form-group">
           <label>Category</label>
-          <select
-            name="category_id"
-            value={values.category_id}
-            onChange={handleChange}
-          >
-            <option value="">Select Category</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+          <AutoComplete
+            items={categories}
+            onSelect={(category) => {
+              if (category) {
+                setSelectedCategory(category);
+                setValue('category_id', category.id);
+              } else {
+                setSelectedCategory(null);
+                setValue('category_id', '');
+              }
+            }}
+            placeholder="Search category..."
+            searchKey="name"
+            value={selectedCategory?.name || ''}
+          />
         </div>
         
         <div className="form-group">

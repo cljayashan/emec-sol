@@ -58,7 +58,6 @@ const QuotationList = () => {
   };
 
   const columns = [
-    { key: 'id', label: 'ID' },
     { key: 'quotation_number', label: 'Quotation Number' },
     { key: 'quotation_date', label: 'Date', render: (val) => formatDate(val) },
     { key: 'customer_name', label: 'Customer' },

@@ -76,7 +76,6 @@ const SaleList = () => {
   };
 
   const columns = [
-    { key: 'id', label: 'ID' },
     { key: 'bill_number', label: 'Bill Number' },
     { key: 'sale_date', label: 'Date', render: (val) => formatDate(val) },
     { key: 'total_amount', label: 'Total Amount', render: (val) => parseFloat(val || 0).toFixed(2) },

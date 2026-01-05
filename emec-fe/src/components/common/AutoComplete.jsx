@@ -7,6 +7,10 @@ const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 
   const wrapperRef = useRef(null);
 
   useEffect(() => {
+    setSearchTerm(value);
+  }, [value]);
+
+  useEffect(() => {
     if (searchTerm) {
       const filtered = items.filter((item) =>
         item[searchKey]?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -14,7 +18,8 @@ const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 
       setFilteredItems(filtered);
       setShowDropdown(true);
     } else {
-      setFilteredItems([]);
+      // Show all items when input is empty and focused, or when clearing
+      setFilteredItems(items);
       setShowDropdown(false);
     }
   }, [searchTerm, items, searchKey]);
@@ -38,12 +43,29 @@ const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 
     onSelect(item);
   };
 
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    setSearchTerm(newValue);
+    if (!newValue && onSelect) {
+      // Clear selection when input is cleared
+      onSelect(null);
+    }
+  };
+
+  const handleInputFocus = () => {
+    if (!searchTerm && items.length > 0) {
+      setFilteredItems(items);
+      setShowDropdown(true);
+    }
+  };
+
   return (
     <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
       <input
         type="text"
         value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
+        onChange={handleInputChange}
+        onFocus={handleInputFocus}
         placeholder={placeholder}
         className="form-group input"
         style={{ width: '100%' }}
