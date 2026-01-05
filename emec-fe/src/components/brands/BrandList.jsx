@@ -95,6 +95,7 @@ const BrandList = () => {
         onSearchChange={setSearchTerm}
         searchPlaceholder="Search by brand name..."
         showSearch={true}
+        showItemsPerPage={true}
       />
       
       {loading ? (

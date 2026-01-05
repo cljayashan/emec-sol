@@ -4,6 +4,16 @@ import Paginator from './Paginator';
 /**
  * Reusable pagination filters component with items per page selector and optional search
  * This component should be placed BEFORE the data grid
+ * @param {Object} props
+ * @param {number} props.itemsPerPage - Current items per page value
+ * @param {Function} props.onItemsPerPageChange - Callback when items per page changes
+ * @param {string} props.searchTerm - Current search term (optional)
+ * @param {Function} props.onSearchChange - Callback when search term changes (optional)
+ * @param {string} props.searchPlaceholder - Placeholder text for search input (optional)
+ * @param {boolean} props.showSearch - Whether to show search input (default: false)
+ * @param {boolean} props.showItemsPerPage - Whether to show items per page selector (default: true)
+ * @param {Array<number>} props.itemsPerPageOptions - Options for items per page selector (default: [10, 25, 50, 100])
+ * @param {string} props.itemsPerPageLabel - Label for items per page selector (default: 'Records per page:')
  */
 export const PaginationFilters = ({
   itemsPerPage,
@@ -12,10 +22,11 @@ export const PaginationFilters = ({
   onSearchChange,
   searchPlaceholder = 'Search...',
   showSearch = false,
+  showItemsPerPage = true,
   itemsPerPageOptions = [10, 25, 50, 100],
   itemsPerPageLabel = 'Records per page:'
 }) => {
-  if (!showSearch && !onItemsPerPageChange) {
+  if (!showSearch && !showItemsPerPage) {
     return null;
   }
 
@@ -42,7 +53,7 @@ export const PaginationFilters = ({
         />
       )}
       
-      {onItemsPerPageChange && (
+      {showItemsPerPage && onItemsPerPageChange && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <label style={{ fontSize: '14px', fontWeight: 500 }}>
             {itemsPerPageLabel}
@@ -85,6 +96,7 @@ export const PaginationFilters = ({
  * @param {Function} props.onSearchChange - Callback when search term changes (optional)
  * @param {string} props.searchPlaceholder - Placeholder text for search input (optional)
  * @param {boolean} props.showSearch - Whether to show search input (default: false)
+ * @param {boolean} props.showItemsPerPage - Whether to show items per page selector (default: true)
  * @param {Array<number>} props.itemsPerPageOptions - Options for items per page selector (default: [10, 25, 50, 100])
  * @param {string} props.itemsPerPageLabel - Label for items per page selector (default: 'Records per page:')
  * @param {boolean} props.showPaginator - Whether to show paginator component (default: true)
@@ -99,6 +111,7 @@ const PaginationControls = ({
   onSearchChange,
   searchPlaceholder = 'Search...',
   showSearch = false,
+  showItemsPerPage = true,
   itemsPerPageOptions = [10, 25, 50, 100],
   itemsPerPageLabel = 'Records per page:',
   showPaginator = true
@@ -112,6 +125,7 @@ const PaginationControls = ({
         onSearchChange={onSearchChange}
         searchPlaceholder={searchPlaceholder}
         showSearch={showSearch}
+        showItemsPerPage={showItemsPerPage}
         itemsPerPageOptions={itemsPerPageOptions}
         itemsPerPageLabel={itemsPerPageLabel}
       />
