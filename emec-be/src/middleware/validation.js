@@ -32,9 +32,15 @@ export const validateItemCategory = [
   body('description').optional().trim()
 ];
 
+export const validateBrand = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('description').optional().trim()
+];
+
 export const validateItem = [
   body('item_name').trim().notEmpty().withMessage('Item name is required'),
   body('category_id').optional().isUUID().withMessage('Category ID must be a valid UUID'),
+  body('brand_id').optional().isUUID().withMessage('Brand ID must be a valid UUID'),
   body('barcode').optional().trim(),
   body('measurement_unit').optional().trim()
 ];

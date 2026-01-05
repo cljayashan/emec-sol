@@ -6,9 +6,10 @@ class Item {
     const pageNum = Math.max(1, parseInt(page) || 1);
     const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 10));
     const offset = Math.max(0, (pageNum - 1) * limitNum);
-    let query = `SELECT i.*, ic.name as category_name 
+    let query = `SELECT i.*, ic.name as category_name, b.name as brand_name 
                  FROM items i 
                  LEFT JOIN item_categories ic ON i.category_id = ic.id 
+                 LEFT JOIN vehicle_brands b ON i.brand_id = b.id 
                  WHERE i.is_deleted = 0`;
     const params = [];
 
@@ -30,9 +31,10 @@ class Item {
 
   static async findById(id) {
     const [rows] = await pool.execute(
-      `SELECT i.*, ic.name as category_name 
+      `SELECT i.*, ic.name as category_name, b.name as brand_name 
        FROM items i 
        LEFT JOIN item_categories ic ON i.category_id = ic.id 
+       LEFT JOIN vehicle_brands b ON i.brand_id = b.id 
        WHERE i.id = ? AND i.is_deleted = 0`,
       [id]
     );
@@ -50,13 +52,13 @@ class Item {
   static async create(data) {
     const id = generateUUID();
     await pool.execute(
-      `INSERT INTO items (id, item_name, description, brand, category_id, barcode, measurement_unit) 
+      `INSERT INTO items (id, item_name, description, brand_id, category_id, barcode, measurement_unit) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.item_name,
         data.description || null,
-        data.brand || null,
+        data.brand_id || null,
         data.category_id || null,
         data.barcode || null,
         data.measurement_unit || null
@@ -67,12 +69,12 @@ class Item {
 
   static async update(id, data) {
     await pool.execute(
-      `UPDATE items SET item_name = ?, description = ?, brand = ?, category_id = ?, barcode = ?, measurement_unit = ? 
+      `UPDATE items SET item_name = ?, description = ?, brand_id = ?, category_id = ?, barcode = ?, measurement_unit = ? 
        WHERE id = ?`,
       [
         data.item_name,
         data.description || null,
-        data.brand || null,
+        data.brand_id || null,
         data.category_id || null,
         data.barcode || null,
         data.measurement_unit || null,

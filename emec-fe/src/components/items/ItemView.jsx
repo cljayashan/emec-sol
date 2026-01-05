@@ -45,7 +45,7 @@ const ItemView = () => {
           <strong>Description:</strong> {item.description || 'N/A'}
         </div>
         <div>
-          <strong>Brand:</strong> {item.brand || 'N/A'}
+          <strong>Vehicle Brand:</strong> {item.brand_name || 'N/A'}
         </div>
         <div>
           <strong>Category:</strong> {item.category_name || 'N/A'}

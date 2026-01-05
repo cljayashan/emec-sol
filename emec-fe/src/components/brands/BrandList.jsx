@@ -1,35 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { itemService } from '../../services/itemService';
+import { brandService } from '../../services/brandService';
 import DataGrid from '../common/DataGrid';
 import Paginator from '../common/Paginator';
 import ConfirmDialog from '../common/ConfirmDialog';
 import { useConfirm } from '../../hooks/useConfirm';
 
-const ItemList = () => {
-  const [items, setItems] = useState([]);
+const BrandList = () => {
+  const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 10;
   const navigate = useNavigate();
   const { isOpen, message, confirm, handleConfirm, handleCancel } = useConfirm();
   const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
-    loadItems();
-  }, [currentPage, searchTerm]);
+    loadBrands();
+  }, [currentPage]);
 
-  const loadItems = async () => {
+  const loadBrands = async () => {
     try {
       setLoading(true);
-      const response = await itemService.getAll(currentPage, itemsPerPage, searchTerm);
-      setItems(response.data.data.data);
+      const response = await brandService.getAll(currentPage, itemsPerPage);
+      setBrands(response.data.data.data);
       setTotalItems(response.data.data.total);
     } catch (error) {
-      toast.error('Failed to load items');
+      toast.error('Failed to load vehicle brands');
     } finally {
       setLoading(false);
     }
@@ -37,31 +36,28 @@ const ItemList = () => {
 
   const handleAction = (action, row) => {
     if (action === 'view') {
-      navigate(`/items/${row.id}/view`);
+      navigate(`/brands/${row.id}/view`);
     } else if (action === 'edit') {
-      navigate(`/items/${row.id}/edit`);
+      navigate(`/brands/${row.id}/edit`);
     } else if (action === 'delete') {
       setDeleteId(row.id);
-      confirm('Are you sure you want to delete this item?', handleDelete);
+      confirm('Are you sure you want to delete this vehicle brand?', handleDelete);
     }
   };
 
   const handleDelete = async () => {
     try {
-      await itemService.delete(deleteId);
-      toast.success('Item deleted successfully');
-      loadItems();
+      await brandService.delete(deleteId);
+      toast.success('Vehicle brand deleted successfully');
+      loadBrands();
     } catch (error) {
-      toast.error('Failed to delete item');
+      toast.error('Failed to delete vehicle brand');
     }
   };
 
   const columns = [
-    { key: 'item_name', label: 'Item Name' },
-    { key: 'brand_name', label: 'Vehicle Brand' },
-    { key: 'category_name', label: 'Category' },
-    { key: 'barcode', label: 'Barcode' },
-    { key: 'measurement_unit', label: 'Unit' }
+    { key: 'name', label: 'Name' },
+    { key: 'description', label: 'Description' }
   ];
 
   const actions = [
@@ -73,27 +69,17 @@ const ItemList = () => {
   return (
     <div className="card">
       <div className="card-header">
-        <h2 className="card-title">Items</h2>
-        <button className="btn btn-primary" onClick={() => navigate('/items/new')}>
-          Add New Item
+        <h2 className="card-title">Vehicle Brands</h2>
+        <button className="btn btn-primary" onClick={() => navigate('/brands/new')}>
+          Add New Vehicle Brand
         </button>
-      </div>
-      
-      <div style={{ marginBottom: '20px' }}>
-        <input
-          type="text"
-          placeholder="Search by name or barcode..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ padding: '8px', width: '300px', border: '1px solid #ddd', borderRadius: '4px' }}
-        />
       </div>
       
       {loading ? (
         <p>Loading...</p>
       ) : (
         <>
-          <DataGrid columns={columns} data={items} actions={actions} onAction={handleAction} />
+          <DataGrid columns={columns} data={brands} actions={actions} onAction={handleAction} />
           <Paginator
             totalItems={totalItems}
             itemsPerPage={itemsPerPage}
@@ -113,5 +99,5 @@ const ItemList = () => {
   );
 };
 
-export default ItemList;
+export default BrandList;
 

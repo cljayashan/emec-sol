@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { itemService } from '../../services/itemService';
 import { itemCategoryService } from '../../services/itemCategoryService';
+import { brandService } from '../../services/brandService';
 import { useForm } from '../../hooks/useForm';
 import AutoComplete from '../common/AutoComplete';
 
@@ -13,17 +14,20 @@ const ItemForm = () => {
   const { values, handleChange, setValue, reset } = useForm({
     item_name: '',
     description: '',
-    brand: '',
+    brand_id: '',
     category_id: '',
     barcode: '',
     measurement_unit: ''
   });
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedBrand, setSelectedBrand] = useState(null);
 
   useEffect(() => {
     loadCategories();
+    loadBrands();
     if (isEdit) {
       loadItem();
     }
@@ -41,6 +45,18 @@ const ItemForm = () => {
     }
   }, [categories, values.category_id]);
 
+  useEffect(() => {
+    // Update selected brand when brands are loaded and we have a brand_id
+    if (brands.length > 0 && values.brand_id) {
+      const brand = brands.find(b => b.id === values.brand_id);
+      if (brand && (!selectedBrand || selectedBrand.id !== brand.id)) {
+        setSelectedBrand(brand);
+      }
+    } else if (!values.brand_id) {
+      setSelectedBrand(null);
+    }
+  }, [brands, values.brand_id]);
+
   const loadCategories = async () => {
     try {
       const response = await itemCategoryService.getAll(1, 1000);
@@ -50,13 +66,22 @@ const ItemForm = () => {
     }
   };
 
+  const loadBrands = async () => {
+    try {
+      const response = await brandService.getAll(1, 1000);
+      setBrands(response.data.data.data);
+    } catch (error) {
+      toast.error('Failed to load vehicle brands');
+    }
+  };
+
   const loadItem = async () => {
     try {
       const response = await itemService.getById(id);
       const item = response.data.data;
       setValue('item_name', item.item_name);
       setValue('description', item.description || '');
-      setValue('brand', item.brand || '');
+      setValue('brand_id', item.brand_id || '');
       setValue('category_id', item.category_id || '');
       setValue('barcode', item.barcode || '');
       setValue('measurement_unit', item.measurement_unit || '');
@@ -72,7 +97,8 @@ const ItemForm = () => {
     try {
       const data = {
         ...values,
-        category_id: values.category_id || null
+        category_id: values.category_id || null,
+        brand_id: values.brand_id || null
       };
       if (isEdit) {
         await itemService.update(id, data);
@@ -117,16 +143,6 @@ const ItemForm = () => {
         </div>
         
         <div className="form-group">
-          <label>Brand</label>
-          <input
-            type="text"
-            name="brand"
-            value={values.brand}
-            onChange={handleChange}
-          />
-        </div>
-        
-        <div className="form-group">
           <label>Category</label>
           <AutoComplete
             items={categories}
@@ -142,6 +158,25 @@ const ItemForm = () => {
             placeholder="Search category..."
             searchKey="name"
             value={selectedCategory?.name || ''}
+          />
+        </div>
+        
+        <div className="form-group">
+          <label>Vehicle Brand</label>
+          <AutoComplete
+            items={brands}
+            onSelect={(brand) => {
+              if (brand) {
+                setSelectedBrand(brand);
+                setValue('brand_id', brand.id);
+              } else {
+                setSelectedBrand(null);
+                setValue('brand_id', '');
+              }
+            }}
+            placeholder="Search vehicle brand..."
+            searchKey="name"
+            value={selectedBrand?.name || ''}
           />
         </div>
         

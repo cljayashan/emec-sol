@@ -14,6 +14,9 @@ import DeliveryPersonView from './components/deliveryPersons/DeliveryPersonView'
 import ItemCategoryList from './components/itemCategories/ItemCategoryList';
 import ItemCategoryForm from './components/itemCategories/ItemCategoryForm';
 import ItemCategoryView from './components/itemCategories/ItemCategoryView';
+import BrandList from './components/brands/BrandList';
+import BrandForm from './components/brands/BrandForm';
+import BrandView from './components/brands/BrandView';
 import ItemList from './components/items/ItemList';
 import ItemForm from './components/items/ItemForm';
 import ItemView from './components/items/ItemView';
@@ -64,6 +67,11 @@ function App() {
                   <Route path="/item-categories/new" element={<ItemCategoryForm />} />
                   <Route path="/item-categories/:id/edit" element={<ItemCategoryForm />} />
                   <Route path="/item-categories/:id/view" element={<ItemCategoryView />} />
+                  
+                  <Route path="/brands" element={<BrandList />} />
+                  <Route path="/brands/new" element={<BrandForm />} />
+                  <Route path="/brands/:id/edit" element={<BrandForm />} />
+                  <Route path="/brands/:id/view" element={<BrandView />} />
                   
                   <Route path="/items" element={<ItemList />} />
                   <Route path="/items/new" element={<ItemForm />} />
