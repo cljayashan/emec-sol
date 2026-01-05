@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { itemService } from '../../services/itemService';
@@ -6,6 +6,7 @@ import { itemCategoryService } from '../../services/itemCategoryService';
 import { brandService } from '../../services/brandService';
 import { useForm } from '../../hooks/useForm';
 import AutoComplete from '../common/AutoComplete';
+import { MEASUREMENT_UNITS } from '../../utils/constants';
 
 const ItemForm = () => {
   const { id } = useParams();
@@ -24,6 +25,12 @@ const ItemForm = () => {
   const [brands, setBrands] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
+  const [selectedMeasurementUnit, setSelectedMeasurementUnit] = useState(null);
+
+  // Transform measurement units array into objects for AutoComplete
+  const measurementUnitsList = useMemo(() => {
+    return MEASUREMENT_UNITS.map(unit => ({ name: unit }));
+  }, []);
 
   useEffect(() => {
     loadCategories();
@@ -56,6 +63,18 @@ const ItemForm = () => {
       setSelectedBrand(null);
     }
   }, [brands, values.brand_id]);
+
+  useEffect(() => {
+    // Update selected measurement unit when measurement_unit value changes
+    if (values.measurement_unit) {
+      const unit = measurementUnitsList.find(u => u.name === values.measurement_unit);
+      if (unit && (!selectedMeasurementUnit || selectedMeasurementUnit.name !== unit.name)) {
+        setSelectedMeasurementUnit(unit);
+      }
+    } else {
+      setSelectedMeasurementUnit(null);
+    }
+  }, [values.measurement_unit, measurementUnitsList]);
 
   const loadCategories = async () => {
     try {
@@ -192,12 +211,20 @@ const ItemForm = () => {
         
         <div className="form-group">
           <label>Measurement Unit</label>
-          <input
-            type="text"
-            name="measurement_unit"
-            value={values.measurement_unit}
-            onChange={handleChange}
-            placeholder="e.g., kg, liter, piece"
+          <AutoComplete
+            items={measurementUnitsList}
+            onSelect={(unit) => {
+              if (unit) {
+                setSelectedMeasurementUnit(unit);
+                setValue('measurement_unit', unit.name);
+              } else {
+                setSelectedMeasurementUnit(null);
+                setValue('measurement_unit', '');
+              }
+            }}
+            placeholder="Search measurement unit..."
+            searchKey="name"
+            value={selectedMeasurementUnit?.name || ''}
           />
         </div>
         

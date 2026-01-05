@@ -24,3 +24,36 @@ export const QUOTATION_STATUS_LABELS = {
   [QUOTATION_STATUS.REJECTED]: 'Rejected'
 };
 
+export const MEASUREMENT_UNITS = [
+  'Each',
+  'Piece',
+  'Unit',
+  'Item',
+  'Pack',
+  'Box',
+  'Carton',
+  'Dozen',
+  'Gram',
+  'Kilogram',
+  'Pound',
+  'Ounce',
+  'Millimeter',
+  'Centimeter',
+  'Meter',
+  'Inch',
+  'Foot',
+  'Yard',
+  'Milliliter',
+  'Liter',
+  'Fluid ounce',
+  'Gallon',
+  'Cubic centimeter',
+  'Square meter',
+  'Square foot',
+  'Serving',
+  'Portion',
+  'Bundle',
+  'Set',
+  'Case'
+];
+
