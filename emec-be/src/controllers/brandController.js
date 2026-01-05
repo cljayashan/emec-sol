@@ -5,7 +5,8 @@ export const getAllBrands = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const result = await Brand.findAll(page, limit);
+    const search = req.query.search || '';
+    const result = await Brand.findAll(page, limit, search);
     sendSuccess(res, result, 'Vehicle brands retrieved successfully');
   } catch (error) {
     next(error);

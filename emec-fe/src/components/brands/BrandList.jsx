@@ -12,19 +12,24 @@ const BrandList = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 10;
   const navigate = useNavigate();
   const { isOpen, message, confirm, handleConfirm, handleCancel } = useConfirm();
   const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  useEffect(() => {
     loadBrands();
-  }, [currentPage]);
+  }, [currentPage, searchTerm]);
 
   const loadBrands = async () => {
     try {
       setLoading(true);
-      const response = await brandService.getAll(currentPage, itemsPerPage);
+      const response = await brandService.getAll(currentPage, itemsPerPage, searchTerm);
       setBrands(response.data.data.data);
       setTotalItems(response.data.data.total);
     } catch (error) {
@@ -73,6 +78,16 @@ const BrandList = () => {
         <button className="btn btn-primary" onClick={() => navigate('/brands/new')}>
           Add New Vehicle Brand
         </button>
+      </div>
+      
+      <div style={{ marginBottom: '20px' }}>
+        <input
+          type="text"
+          placeholder="Search by brand name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ padding: '8px', width: '300px', border: '1px solid #ddd', borderRadius: '4px' }}
+        />
       </div>
       
       {loading ? (
