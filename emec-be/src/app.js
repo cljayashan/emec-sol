@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 // Routes
 import authRoutes from './routes/authRoutes.js';
 import supplierRoutes from './routes/supplierRoutes.js';
+import customerRoutes from './routes/customerRoutes.js';
 import deliveryPersonRoutes from './routes/deliveryPersonRoutes.js';
 import itemCategoryRoutes from './routes/itemCategoryRoutes.js';
 import brandRoutes from './routes/brandRoutes.js';
@@ -36,6 +37,7 @@ app.use('/api/auth', authRoutes);
 
 // Protected Routes (add authenticate middleware as needed)
 app.use('/api/suppliers', supplierRoutes);
+app.use('/api/customers', customerRoutes);
 app.use('/api/delivery-persons', deliveryPersonRoutes);
 app.use('/api/item-categories', itemCategoryRoutes);
 app.use('/api/vehicle-brands', brandRoutes);

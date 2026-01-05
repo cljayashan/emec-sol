@@ -8,6 +8,9 @@ import Register from './components/auth/Register';
 import SupplierList from './components/suppliers/SupplierList';
 import SupplierForm from './components/suppliers/SupplierForm';
 import SupplierView from './components/suppliers/SupplierView';
+import CustomerList from './components/customers/CustomerList';
+import CustomerForm from './components/customers/CustomerForm';
+import CustomerView from './components/customers/CustomerView';
 import DeliveryPersonList from './components/deliveryPersons/DeliveryPersonList';
 import DeliveryPersonForm from './components/deliveryPersons/DeliveryPersonForm';
 import DeliveryPersonView from './components/deliveryPersons/DeliveryPersonView';
@@ -63,6 +66,11 @@ function App() {
                   <Route path="/suppliers/new" element={<SupplierForm />} />
                   <Route path="/suppliers/:id/edit" element={<SupplierForm />} />
                   <Route path="/suppliers/:id/view" element={<SupplierView />} />
+                  
+                  <Route path="/customers" element={<CustomerList />} />
+                  <Route path="/customers/new" element={<CustomerForm />} />
+                  <Route path="/customers/:id/edit" element={<CustomerForm />} />
+                  <Route path="/customers/:id/view" element={<CustomerView />} />
                   
                   <Route path="/delivery-persons" element={<DeliveryPersonList />} />
                   <Route path="/delivery-persons/new" element={<DeliveryPersonForm />} />

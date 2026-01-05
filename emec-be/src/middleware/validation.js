@@ -54,6 +54,16 @@ export const validateVehicle = [
   body('year_of_registration').optional().isInt({ min: 1900, max: 2100 }).withMessage('Year of registration must be a valid year')
 ];
 
+export const validateCustomer = [
+  body('full_name').trim().notEmpty().withMessage('Full name is required'),
+  body('name_with_initials').optional().trim(),
+  body('nic').optional().trim(),
+  body('mobile1').optional().trim(),
+  body('mobile2').optional().trim(),
+  body('address').optional().trim(),
+  body('email_address').optional().isEmail().withMessage('Email address must be a valid email')
+];
+
 export const validateItem = [
   body('item_name').trim().notEmpty().withMessage('Item name is required'),
   body('category_id').optional().isUUID().withMessage('Category ID must be a valid UUID'),

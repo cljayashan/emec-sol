@@ -7,6 +7,7 @@ This folder contains database migration scripts that should be run sequentially 
 - **001_add_vehicle_brands.sql** - Adds vehicle_brands table and updates items table to use brand_id
 - **002_add_vehicle_models.sql** - Adds vehicle_models table with foreign key to vehicle_brands
 - **003_add_vehicles.sql** - Adds vehicles table for vehicle registration with foreign keys to vehicle_brands and vehicle_models
+- **004_add_customers.sql** - Adds customers table for customer management
 
 ## How to Run Migrations
 
