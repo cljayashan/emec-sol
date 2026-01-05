@@ -8,23 +8,47 @@ const BrandForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEdit = !!id;
-  const { values, handleChange, setValue, reset } = useForm({ name: '', description: '' });
+  const { values, handleChange, setValue, setValues } = useForm({ name: '', description: '' });
   const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(false);
 
   useEffect(() => {
-    if (isEdit) {
+    if (isEdit && id) {
       loadBrand();
     }
   }, [id]);
 
   const loadBrand = async () => {
     try {
+      setLoadingData(true);
       const response = await brandService.getById(id);
-      setValue('name', response.data.data.name);
-      setValue('description', response.data.data.description || '');
+      console.log('Full response:', response);
+      console.log('Response data:', response.data);
+      
+      if (response.data && response.data.success && response.data.data) {
+        const brand = response.data.data;
+        console.log('Brand data:', brand);
+        
+        // Update all values at once
+        setValues({
+          name: brand.name || '',
+          description: brand.description || ''
+        });
+        
+        console.log('Form values set:', { name: brand.name, description: brand.description });
+      } else {
+        console.error('Invalid response:', response.data);
+        toast.error('Failed to load vehicle brand data');
+        navigate('/brands');
+      }
     } catch (error) {
-      toast.error('Failed to load vehicle brand');
+      console.error('Error loading vehicle brand:', error);
+      console.error('Error response:', error.response);
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to load vehicle brand';
+      toast.error(errorMessage);
       navigate('/brands');
+    } finally {
+      setLoadingData(false);
     }
   };
 
@@ -47,6 +71,17 @@ const BrandForm = () => {
     }
   };
 
+  if (loadingData) {
+    return (
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">{isEdit ? 'Edit Vehicle Brand' : 'Add New Vehicle Brand'}</h2>
+        </div>
+        <p>Loading vehicle brand data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="card">
       <div className="card-header">
@@ -59,9 +94,10 @@ const BrandForm = () => {
           <input
             type="text"
             name="name"
-            value={values.name}
+            value={values.name || ''}
             onChange={handleChange}
             required
+            disabled={loading}
           />
         </div>
         
@@ -69,16 +105,17 @@ const BrandForm = () => {
           <label>Description</label>
           <textarea
             name="description"
-            value={values.description}
+            value={values.description || ''}
             onChange={handleChange}
+            disabled={loading}
           />
         </div>
         
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button type="submit" className="btn btn-primary" disabled={loading}>
+          <button type="submit" className="btn btn-primary" disabled={loading || loadingData}>
             {loading ? 'Saving...' : isEdit ? 'Update' : 'Create'}
           </button>
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/brands')}>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/brands')} disabled={loading}>
             Cancel
           </button>
         </div>

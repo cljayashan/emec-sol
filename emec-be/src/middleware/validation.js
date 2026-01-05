@@ -37,6 +37,12 @@ export const validateBrand = [
   body('description').optional().trim()
 ];
 
+export const validateVehicleModel = [
+  body('brand_id').trim().notEmpty().isUUID().withMessage('Brand ID is required and must be a valid UUID'),
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('description').optional().trim()
+];
+
 export const validateItem = [
   body('item_name').trim().notEmpty().withMessage('Item name is required'),
   body('category_id').optional().isUUID().withMessage('Category ID must be a valid UUID'),

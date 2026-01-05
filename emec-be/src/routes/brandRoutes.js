@@ -7,8 +7,12 @@ import {
   deleteBrand
 } from '../controllers/brandController.js';
 import { validate, validateBrand } from '../middleware/validation.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// All routes require authentication
+router.use(authenticate);
 
 router.get('/', getAllBrands);
 router.get('/:id', getBrandById);

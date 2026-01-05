@@ -17,6 +17,9 @@ import ItemCategoryView from './components/itemCategories/ItemCategoryView';
 import BrandList from './components/brands/BrandList';
 import BrandForm from './components/brands/BrandForm';
 import BrandView from './components/brands/BrandView';
+import VehicleModelList from './components/vehicleModels/VehicleModelList';
+import VehicleModelForm from './components/vehicleModels/VehicleModelForm';
+import VehicleModelView from './components/vehicleModels/VehicleModelView';
 import ItemList from './components/items/ItemList';
 import ItemForm from './components/items/ItemForm';
 import ItemView from './components/items/ItemView';
@@ -72,6 +75,11 @@ function App() {
                   <Route path="/brands/new" element={<BrandForm />} />
                   <Route path="/brands/:id/edit" element={<BrandForm />} />
                   <Route path="/brands/:id/view" element={<BrandView />} />
+                  
+                  <Route path="/vehicle-models" element={<VehicleModelList />} />
+                  <Route path="/vehicle-models/new" element={<VehicleModelForm />} />
+                  <Route path="/vehicle-models/:id/edit" element={<VehicleModelForm />} />
+                  <Route path="/vehicle-models/:id/view" element={<VehicleModelView />} />
                   
                   <Route path="/items" element={<ItemList />} />
                   <Route path="/items/new" element={<ItemForm />} />
