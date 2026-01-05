@@ -3,24 +3,32 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { brandService } from '../../services/brandService';
 import DataGrid from '../common/DataGrid';
+import { PaginationFilters } from '../common/PaginationControls';
 import Paginator from '../common/Paginator';
 import ConfirmDialog from '../common/ConfirmDialog';
 import { useConfirm } from '../../hooks/useConfirm';
+import { useTablePagination } from '../../hooks/useTablePagination';
 
 const BrandList = () => {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [itemsPerPage, setItemsPerPage] = useState(10);
   const navigate = useNavigate();
   const { isOpen, message, confirm, handleConfirm, handleCancel } = useConfirm();
   const [deleteId, setDeleteId] = useState(null);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, itemsPerPage]);
+  
+  const {
+    currentPage,
+    itemsPerPage,
+    searchTerm,
+    totalItems,
+    setTotalItems,
+    setSearchTerm,
+    setItemsPerPage,
+    setCurrentPage
+  } = useTablePagination({
+    initialItemsPerPage: 10,
+    enableSearch: true
+  });
 
   useEffect(() => {
     loadBrands();
@@ -80,35 +88,14 @@ const BrandList = () => {
         </button>
       </div>
       
-      <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <input
-          type="text"
-          placeholder="Search by brand name..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ padding: '8px', width: '300px', border: '1px solid #ddd', borderRadius: '4px' }}
-        />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label style={{ fontSize: '14px', fontWeight: 500 }}>Records per page:</label>
-          <select
-            value={itemsPerPage}
-            onChange={(e) => setItemsPerPage(Number(e.target.value))}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              fontSize: '14px',
-              cursor: 'pointer',
-              backgroundColor: 'white'
-            }}
-          >
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
-        </div>
-      </div>
+      <PaginationFilters
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search by brand name..."
+        showSearch={true}
+      />
       
       {loading ? (
         <p>Loading...</p>
