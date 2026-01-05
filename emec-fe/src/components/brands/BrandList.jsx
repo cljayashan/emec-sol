@@ -13,18 +13,18 @@ const BrandList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const navigate = useNavigate();
   const { isOpen, message, confirm, handleConfirm, handleCancel } = useConfirm();
   const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, itemsPerPage]);
 
   useEffect(() => {
     loadBrands();
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, itemsPerPage]);
 
   const loadBrands = async () => {
     try {
@@ -80,7 +80,7 @@ const BrandList = () => {
         </button>
       </div>
       
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
         <input
           type="text"
           placeholder="Search by brand name..."
@@ -88,6 +88,26 @@ const BrandList = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ padding: '8px', width: '300px', border: '1px solid #ddd', borderRadius: '4px' }}
         />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label style={{ fontSize: '14px', fontWeight: 500 }}>Records per page:</label>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '14px',
+              cursor: 'pointer',
+              backgroundColor: 'white'
+            }}
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
       </div>
       
       {loading ? (
