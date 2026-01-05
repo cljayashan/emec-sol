@@ -51,7 +51,8 @@ export const validateVehicle = [
   body('model_id').trim().notEmpty().isUUID().withMessage('Model ID is required and must be a valid UUID'),
   body('version').optional().trim(),
   body('year_of_manufacture').optional().isInt({ min: 1900, max: 2100 }).withMessage('Year of manufacture must be a valid year'),
-  body('year_of_registration').optional().isInt({ min: 1900, max: 2100 }).withMessage('Year of registration must be a valid year')
+  body('year_of_registration').optional().isInt({ min: 1900, max: 2100 }).withMessage('Year of registration must be a valid year'),
+  body('remarks').optional().trim()
 ];
 
 export const validateCustomer = [

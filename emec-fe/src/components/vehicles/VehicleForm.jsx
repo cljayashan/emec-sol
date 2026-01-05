@@ -21,7 +21,8 @@ const VehicleForm = () => {
     model_id: '',
     version: '',
     year_of_manufacture: '',
-    year_of_registration: ''
+    year_of_registration: '',
+    remarks: ''
   });
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
@@ -32,10 +33,22 @@ const VehicleForm = () => {
   const [selectedModel, setSelectedModel] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [selectedVehicleType, setSelectedVehicleType] = useState(null);
+  const [selectedYearOfManufacture, setSelectedYearOfManufacture] = useState(null);
+  const [selectedYearOfRegistration, setSelectedYearOfRegistration] = useState(null);
 
   // Transform vehicle types array into objects for AutoComplete
   const vehicleTypesList = useMemo(() => {
     return VEHICLE_TYPES.map(type => ({ name: type }));
+  }, []);
+
+  // Generate year options for autocomplete (from current year down to 1900)
+  const yearOptionsList = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = currentYear; year >= 1900; year--) {
+      years.push({ name: year.toString(), value: year });
+    }
+    return years;
   }, []);
 
   useEffect(() => {
@@ -93,6 +106,30 @@ const VehicleForm = () => {
       setSelectedModel(null);
     }
   }, [models, values.model_id]);
+
+  useEffect(() => {
+    // Update selected year of manufacture when year_of_manufacture value changes
+    if (values.year_of_manufacture) {
+      const year = yearOptionsList.find(y => y.value.toString() === values.year_of_manufacture.toString());
+      if (year && (!selectedYearOfManufacture || selectedYearOfManufacture.value !== year.value)) {
+        setSelectedYearOfManufacture(year);
+      }
+    } else {
+      setSelectedYearOfManufacture(null);
+    }
+  }, [values.year_of_manufacture, yearOptionsList]);
+
+  useEffect(() => {
+    // Update selected year of registration when year_of_registration value changes
+    if (values.year_of_registration) {
+      const year = yearOptionsList.find(y => y.value.toString() === values.year_of_registration.toString());
+      if (year && (!selectedYearOfRegistration || selectedYearOfRegistration.value !== year.value)) {
+        setSelectedYearOfRegistration(year);
+      }
+    } else {
+      setSelectedYearOfRegistration(null);
+    }
+  }, [values.year_of_registration, yearOptionsList]);
 
   useEffect(() => {
     // Load models when brand changes - ONLY load if brand is selected
@@ -155,7 +192,8 @@ const VehicleForm = () => {
           model_id: vehicle.model_id || '',
           version: vehicle.version || '',
           year_of_manufacture: vehicle.year_of_manufacture || '',
-          year_of_registration: vehicle.year_of_registration || ''
+          year_of_registration: vehicle.year_of_registration || '',
+          remarks: vehicle.remarks || ''
         });
       } else {
         toast.error('Failed to load vehicle data');
@@ -204,12 +242,6 @@ const VehicleForm = () => {
         <p>Loading vehicle data...</p>
       </div>
     );
-  }
-
-  const currentYear = new Date().getFullYear();
-  const yearOptions = [];
-  for (let year = currentYear; year >= 1900; year--) {
-    yearOptions.push(year);
   }
 
   return (
@@ -329,32 +361,52 @@ const VehicleForm = () => {
 
         <div className="form-group">
           <label>Year of Manufacture</label>
-          <select
-            name="year_of_manufacture"
-            value={values.year_of_manufacture || ''}
-            onChange={handleChange}
-            disabled={loading}
-          >
-            <option value="">Select Year</option>
-            {yearOptions.map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
+          <AutoComplete
+            items={yearOptionsList}
+            onSelect={(year) => {
+              if (year) {
+                setSelectedYearOfManufacture(year);
+                setValue('year_of_manufacture', year.value.toString());
+              } else {
+                setSelectedYearOfManufacture(null);
+                setValue('year_of_manufacture', '');
+              }
+            }}
+            placeholder="Search year..."
+            searchKey="name"
+            value={selectedYearOfManufacture?.name || values.year_of_manufacture || ''}
+          />
         </div>
 
         <div className="form-group">
           <label>Year of Registration</label>
-          <select
-            name="year_of_registration"
-            value={values.year_of_registration || ''}
+          <AutoComplete
+            items={yearOptionsList}
+            onSelect={(year) => {
+              if (year) {
+                setSelectedYearOfRegistration(year);
+                setValue('year_of_registration', year.value.toString());
+              } else {
+                setSelectedYearOfRegistration(null);
+                setValue('year_of_registration', '');
+              }
+            }}
+            placeholder="Search year..."
+            searchKey="name"
+            value={selectedYearOfRegistration?.name || values.year_of_registration || ''}
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Remarks</label>
+          <textarea
+            name="remarks"
+            value={values.remarks || ''}
             onChange={handleChange}
+            placeholder="Enter any additional remarks..."
             disabled={loading}
-          >
-            <option value="">Select Year</option>
-            {yearOptions.map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
+            rows={4}
+          />
         </div>
         
         <div style={{ display: 'flex', gap: '10px' }}>

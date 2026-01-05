@@ -62,8 +62,8 @@ class Vehicle {
   static async create(data) {
     const id = generateUUID();
     await pool.execute(
-      `INSERT INTO vehicles (id, customer, vehicle_type, reg_no, brand_id, model_id, version, year_of_manufacture, year_of_registration) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO vehicles (id, customer, vehicle_type, reg_no, brand_id, model_id, version, year_of_manufacture, year_of_registration, remarks) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.customer,
@@ -73,7 +73,8 @@ class Vehicle {
         data.model_id,
         data.version || null,
         data.year_of_manufacture || null,
-        data.year_of_registration || null
+        data.year_of_registration || null,
+        data.remarks || null
       ]
     );
     return this.findById(id);
@@ -82,7 +83,7 @@ class Vehicle {
   static async update(id, data) {
     await pool.execute(
       `UPDATE vehicles SET customer = ?, vehicle_type = ?, reg_no = ?, brand_id = ?, model_id = ?, 
-       version = ?, year_of_manufacture = ?, year_of_registration = ? WHERE id = ?`,
+       version = ?, year_of_manufacture = ?, year_of_registration = ?, remarks = ? WHERE id = ?`,
       [
         data.customer,
         data.vehicle_type || null,
@@ -92,6 +93,7 @@ class Vehicle {
         data.version || null,
         data.year_of_manufacture || null,
         data.year_of_registration || null,
+        data.remarks || null,
         id
       ]
     );

@@ -63,6 +63,9 @@ const VehicleView = () => {
           <strong>Year of Registration:</strong> {vehicle.year_of_registration || 'N/A'}
         </div>
         <div>
+          <strong>Remarks:</strong> {vehicle.remarks || 'N/A'}
+        </div>
+        <div>
           <strong>Created At:</strong> {new Date(vehicle.created_at).toLocaleString()}
         </div>
       </div>
