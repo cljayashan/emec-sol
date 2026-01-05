@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { customerService } from '../../services/customerService';
 import { useForm } from '../../hooks/useForm';
@@ -7,7 +7,9 @@ import { useForm } from '../../hooks/useForm';
 const CustomerForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const isEdit = !!id;
+  const returnTo = location.state?.returnTo;
   const { values, handleChange, setValue, setValues } = useForm({ 
     full_name: '', 
     name_with_initials: '',
@@ -72,11 +74,13 @@ const CustomerForm = () => {
       if (isEdit) {
         await customerService.update(id, values);
         toast.success('Customer updated successfully');
+        navigate(returnTo || '/customers');
       } else {
         await customerService.create(values);
         toast.success('Customer created successfully');
+        // Navigate back to the return path if provided, otherwise go to customers list
+        navigate(returnTo || '/customers');
       }
-      navigate('/customers');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Operation failed');
     } finally {
@@ -183,7 +187,7 @@ const CustomerForm = () => {
           <button type="submit" className="btn btn-primary" disabled={loading || loadingData}>
             {loading ? 'Saving...' : isEdit ? 'Update' : 'Create'}
           </button>
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/customers')} disabled={loading}>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate(returnTo || '/customers')} disabled={loading}>
             Cancel
           </button>
         </div>

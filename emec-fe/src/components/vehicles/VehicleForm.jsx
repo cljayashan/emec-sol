@@ -35,6 +35,17 @@ const VehicleForm = () => {
   const [selectedVehicleType, setSelectedVehicleType] = useState(null);
   const [selectedYearOfManufacture, setSelectedYearOfManufacture] = useState(null);
   const [selectedYearOfRegistration, setSelectedYearOfRegistration] = useState(null);
+  const [showCustomerModal, setShowCustomerModal] = useState(false);
+  const [customerFormData, setCustomerFormData] = useState({
+    full_name: '',
+    name_with_initials: '',
+    nic: '',
+    mobile1: '',
+    mobile2: '',
+    address: '',
+    email_address: ''
+  });
+  const [customerFormLoading, setCustomerFormLoading] = useState(false);
 
   // Transform vehicle types array into objects for AutoComplete
   const vehicleTypesList = useMemo(() => {
@@ -161,6 +172,45 @@ const VehicleForm = () => {
     }
   };
 
+  const handleCustomerFormChange = (e) => {
+    const { name, value } = e.target;
+    setCustomerFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleCreateCustomer = async (e) => {
+    e.preventDefault();
+    setCustomerFormLoading(true);
+    try {
+      const response = await customerService.create(customerFormData);
+      toast.success('Customer created successfully');
+      setShowCustomerModal(false);
+      // Reset form
+      setCustomerFormData({
+        full_name: '',
+        name_with_initials: '',
+        nic: '',
+        mobile1: '',
+        mobile2: '',
+        address: '',
+        email_address: ''
+      });
+      // Reload customers and select the newly created one
+      await loadCustomers();
+      if (response.data && response.data.data) {
+        const newCustomer = response.data.data;
+        setSelectedCustomer(newCustomer);
+        setValue('customer', newCustomer.full_name);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to create customer');
+    } finally {
+      setCustomerFormLoading(false);
+    }
+  };
+
   const loadModels = async (brandId) => {
     if (!brandId) {
       // Don't load models if no brandId is provided
@@ -253,27 +303,40 @@ const VehicleForm = () => {
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Customer *</label>
-          <AutoComplete
-            items={customers}
-            onSelect={(customer) => {
-              if (customer) {
-                setSelectedCustomer(customer);
-                setValue('customer', customer.full_name);
-              } else {
-                setSelectedCustomer(null);
-                setValue('customer', '');
-              }
-            }}
-            placeholder="Search customer..."
-            searchKey="full_name"
-            value={selectedCustomer?.full_name || values.customer || ''}
-            renderItem={(customer) => {
-              const mobile = customer.mobile1 || '';
-              const nic = customer.nic || '';
-              const parts = [customer.full_name, mobile, nic].filter(part => part);
-              return parts.join(' | ');
-            }}
-          />
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1 }}>
+              <AutoComplete
+                items={customers}
+                onSelect={(customer) => {
+                  if (customer) {
+                    setSelectedCustomer(customer);
+                    setValue('customer', customer.full_name);
+                  } else {
+                    setSelectedCustomer(null);
+                    setValue('customer', '');
+                  }
+                }}
+                placeholder="Search customer..."
+                searchKey="full_name"
+                value={selectedCustomer?.full_name || values.customer || ''}
+                renderItem={(customer) => {
+                  const mobile = customer.mobile1 || '';
+                  const nic = customer.nic || '';
+                  const parts = [customer.full_name, mobile, nic].filter(part => part);
+                  return parts.join(' | ');
+                }}
+              />
+            </div>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setShowCustomerModal(true)}
+              disabled={loading}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              Add Customer
+            </button>
+          </div>
         </div>
 
         <div className="form-group">
@@ -418,6 +481,114 @@ const VehicleForm = () => {
           </button>
         </div>
       </form>
+
+      {showCustomerModal && (
+        <div className="modal-overlay" onClick={() => setShowCustomerModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+            <div className="modal-header">
+              <h3>Add New Customer</h3>
+              <button className="modal-close" onClick={() => setShowCustomerModal(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleCreateCustomer}>
+              <div className="form-group">
+                <label>Full Name *</label>
+                <input
+                  type="text"
+                  name="full_name"
+                  value={customerFormData.full_name}
+                  onChange={handleCustomerFormChange}
+                  required
+                  disabled={customerFormLoading}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Name with Initials</label>
+                <input
+                  type="text"
+                  name="name_with_initials"
+                  value={customerFormData.name_with_initials}
+                  onChange={handleCustomerFormChange}
+                  disabled={customerFormLoading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>NIC</label>
+                <input
+                  type="text"
+                  name="nic"
+                  value={customerFormData.nic}
+                  onChange={handleCustomerFormChange}
+                  disabled={customerFormLoading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Mobile 1</label>
+                <input
+                  type="text"
+                  name="mobile1"
+                  value={customerFormData.mobile1}
+                  onChange={handleCustomerFormChange}
+                  disabled={customerFormLoading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Mobile 2</label>
+                <input
+                  type="text"
+                  name="mobile2"
+                  value={customerFormData.mobile2}
+                  onChange={handleCustomerFormChange}
+                  disabled={customerFormLoading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Address</label>
+                <textarea
+                  name="address"
+                  value={customerFormData.address}
+                  onChange={handleCustomerFormChange}
+                  disabled={customerFormLoading}
+                  rows={3}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Email Address</label>
+                <input
+                  type="email"
+                  name="email_address"
+                  value={customerFormData.email_address}
+                  onChange={handleCustomerFormChange}
+                  disabled={customerFormLoading}
+                />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  onClick={() => setShowCustomerModal(false)}
+                  disabled={customerFormLoading}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary" 
+                  disabled={customerFormLoading}
+                >
+                  {customerFormLoading ? 'Creating...' : 'Create Customer'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
