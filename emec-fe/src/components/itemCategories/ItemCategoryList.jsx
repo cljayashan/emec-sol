@@ -3,24 +3,36 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { itemCategoryService } from '../../services/itemCategoryService';
 import DataGrid from '../common/DataGrid';
+import { PaginationFilters } from '../common/PaginationControls';
 import Paginator from '../common/Paginator';
 import ConfirmDialog from '../common/ConfirmDialog';
 import { useConfirm } from '../../hooks/useConfirm';
+import { useTablePagination } from '../../hooks/useTablePagination';
 
 const ItemCategoryList = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
-  const itemsPerPage = 10;
   const navigate = useNavigate();
   const { isOpen, message, confirm, handleConfirm, handleCancel } = useConfirm();
   const [deleteId, setDeleteId] = useState(null);
+  
+  const {
+    currentPage,
+    itemsPerPage,
+    searchTerm,
+    totalItems,
+    setTotalItems,
+    setSearchTerm,
+    setItemsPerPage,
+    setCurrentPage
+  } = useTablePagination({
+    initialItemsPerPage: 10,
+    enableSearch: true
+  });
 
   useEffect(() => {
     loadCategories();
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, itemsPerPage]);
 
   const loadCategories = async () => {
     try {
@@ -76,15 +88,15 @@ const ItemCategoryList = () => {
         </button>
       </div>
       
-      <div style={{ marginBottom: '20px' }}>
-        <input
-          type="text"
-          placeholder="Search by name or description..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ padding: '8px', width: '300px', border: '1px solid #ddd', borderRadius: '4px' }}
-        />
-      </div>
+      <PaginationFilters
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search by name or description..."
+        showSearch={true}
+        showItemsPerPage={true}
+      />
       
       {loading ? (
         <p>Loading...</p>
