@@ -31,6 +31,8 @@ const ServiceJobForm = () => {
   const [showVehicleModal, setShowVehicleModal] = useState(false);
   const [serviceTypes, setServiceTypes] = useState([]);
   const [selectedServiceType, setSelectedServiceType] = useState(null);
+  const [ownerName, setOwnerName] = useState('');
+  const [ownerMobile, setOwnerMobile] = useState('');
   const [vehicleDefects, setVehicleDefects] = useState([]);
   const [selectedDefects, setSelectedDefects] = useState([]);
   const [selectedDefect, setSelectedDefect] = useState(null);
@@ -82,6 +84,7 @@ const ServiceJobForm = () => {
     loadVehicleDefects();
     loadPreInspectionRecommendations();
     loadServiceTypes();
+    loadCustomers();
     if (isEdit && id) {
       loadServiceJob();
     }
@@ -141,12 +144,15 @@ const ServiceJobForm = () => {
 
   const loadServiceJob = async () => {
     try {
-      // Ensure vehicles and service types are loaded first
+      // Ensure vehicles, service types, and customers are loaded first
       if (vehicles.length === 0) {
         await loadVehicles();
       }
       if (serviceTypes.length === 0) {
         await loadServiceTypes();
+      }
+      if (customers.length === 0) {
+        await loadCustomers();
       }
       
       const response = await serviceJobService.getById(id);
@@ -154,7 +160,7 @@ const ServiceJobForm = () => {
       setValue('vehicle_id', job.vehicle_id);
       setValue('service_type_id', job.service_type_id || '');
       setValue('fuel_level', job.fuel_level || '');
-      setValue('odometer_reading', job.odometer_reading || '');
+      setValue('odometer_reading', job.odometer_reading ? Math.floor(job.odometer_reading).toString() : '');
       setValue('remarks', job.remarks || '');
       
       // Set selected vehicle - create vehicle object from job data
@@ -167,6 +173,21 @@ const ServiceJobForm = () => {
           model_name: job.vehicle_model_name
         };
         setSelectedVehicle(displayVehicle);
+        setOwnerName(job.vehicle_customer || '');
+        
+        // Set owner mobile from job data (from backend) or try to find customer
+        if (job.owner_mobile) {
+          setOwnerMobile(job.owner_mobile);
+        } else if (job.vehicle_customer && customers.length > 0) {
+          const customer = customers.find(c => c.full_name === job.vehicle_customer);
+          if (customer) {
+            setOwnerMobile(customer.mobile1 || customer.mobile2 || '');
+          } else {
+            setOwnerMobile('');
+          }
+        } else {
+          setOwnerMobile('');
+        }
       }
       
       // Set selected service type
@@ -248,9 +269,26 @@ const ServiceJobForm = () => {
     if (vehicle) {
       setSelectedVehicle(vehicle);
       setValue('vehicle_id', vehicle.id);
+      
+      // Set owner name from vehicle customer field
+      setOwnerName(vehicle.customer || '');
+      
+      // Try to find customer by name to get mobile number
+      if (vehicle.customer && customers.length > 0) {
+        const customer = customers.find(c => c.full_name === vehicle.customer);
+        if (customer) {
+          setOwnerMobile(customer.mobile1 || customer.mobile2 || '');
+        } else {
+          setOwnerMobile('');
+        }
+      } else {
+        setOwnerMobile('');
+      }
     } else {
       setSelectedVehicle(null);
       setValue('vehicle_id', '');
+      setOwnerName('');
+      setOwnerMobile('');
     }
   };
 
@@ -351,7 +389,7 @@ const ServiceJobForm = () => {
         vehicle_id: values.vehicle_id,
         service_type_id: values.service_type_id || null,
         fuel_level: values.fuel_level || null,
-        odometer_reading: values.odometer_reading ? parseFloat(values.odometer_reading) : null,
+        odometer_reading: values.odometer_reading ? parseInt(values.odometer_reading, 10) : null,
         remarks: values.remarks || null,
         defects: selectedDefects,
         recommendations: selectedRecommendations,
@@ -417,6 +455,8 @@ const ServiceJobForm = () => {
                   onClick={() => {
                     setSelectedVehicle(null);
                     setValue('vehicle_id', '');
+                    setOwnerName('');
+                    setOwnerMobile('');
                   }}
                   style={{
                     position: 'absolute',
@@ -445,6 +485,27 @@ const ServiceJobForm = () => {
             >
               Register Vehicle
             </button>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+          <div className="form-group">
+            <label>Owner Name</label>
+            <input
+              type="text"
+              value={ownerName}
+              readOnly
+              style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
+            />
+          </div>
+          <div className="form-group">
+            <label>Owner Mobile</label>
+            <input
+              type="text"
+              value={ownerMobile}
+              readOnly
+              style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
+            />
           </div>
         </div>
 

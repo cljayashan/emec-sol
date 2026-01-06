@@ -42,7 +42,13 @@ const ServiceJobView = () => {
           <strong>Job Number:</strong> {serviceJob.job_number}
         </div>
         <div>
-          <strong>Vehicle:</strong> {serviceJob.vehicle_reg_no} - {serviceJob.vehicle_customer}
+          <strong>Vehicle Number:</strong> {serviceJob.vehicle_reg_no || 'N/A'}
+        </div>
+        <div>
+          <strong>Owner Name:</strong> {serviceJob.vehicle_customer || 'N/A'}
+        </div>
+        <div>
+          <strong>Owner Mobile:</strong> {serviceJob.owner_mobile || 'N/A'}
         </div>
         {serviceJob.vehicle_brand_name && (
           <div>
@@ -53,7 +59,7 @@ const ServiceJobView = () => {
           <strong>Fuel Level:</strong> {serviceJob.fuel_level || 'N/A'}
         </div>
         <div>
-          <strong>Odometer Reading:</strong> {serviceJob.odometer_reading || 'N/A'}
+          <strong>Odometer Reading:</strong> {serviceJob.odometer_reading ? Math.floor(serviceJob.odometer_reading) : 'N/A'}
         </div>
         <div>
           <strong>Status:</strong> <span style={{ 

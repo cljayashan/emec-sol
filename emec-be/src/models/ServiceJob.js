@@ -97,12 +97,14 @@ class ServiceJob {
               vb.name as vehicle_brand_name,
               vm.name as vehicle_model_name,
               st.id as service_type_id,
-              st.name as service_type_name
+              st.name as service_type_name,
+              c.mobile1 as owner_mobile
        FROM service_jobs sj
        LEFT JOIN vehicles v ON sj.vehicle_id = v.id
        LEFT JOIN vehicle_brands vb ON v.brand_id = vb.id
        LEFT JOIN vehicle_models vm ON v.model_id = vm.id
        LEFT JOIN service_types st ON sj.service_type_id = st.id
+       LEFT JOIN customers c ON v.customer = c.full_name AND c.is_deleted = 0
        WHERE sj.id = ? AND sj.is_deleted = 0`,
       [id]
     );
