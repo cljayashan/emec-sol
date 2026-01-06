@@ -9,6 +9,10 @@ This folder contains database migration scripts that should be run sequentially 
 - **003_add_vehicles.sql** - Adds vehicles table for vehicle registration with foreign keys to vehicle_brands and vehicle_models
 - **004_add_customers.sql** - Adds customers table for customer management
 - **005_add_remarks_to_vehicles.sql** - Adds remarks column to vehicles table
+- **006_add_service_types.sql** - Adds service_types table for managing service types
+- **007_add_vehicle_defects.sql** - Adds vehicle_defects table for managing vehicle defects
+- **008_add_pre_inspection_recommendations.sql** - Adds pre_inspection_recommendations table for managing pre inspection recommendations
+- **009_add_service_jobs.sql** - Adds service_jobs table and related tables for service job management
 
 ## How to Run Migrations
 

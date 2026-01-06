@@ -27,6 +27,21 @@ export const validateDeliveryPerson = [
   body('description').optional().trim()
 ];
 
+export const validateServiceType = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('description').optional().trim()
+];
+
+export const validateVehicleDefect = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('description').optional().trim()
+];
+
+export const validatePreInspectionRecommendation = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('description').optional().trim()
+];
+
 export const validateItemCategory = [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('description').optional().trim()

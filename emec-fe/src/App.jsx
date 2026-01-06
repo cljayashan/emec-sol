@@ -14,6 +14,15 @@ import CustomerView from './components/customers/CustomerView';
 import DeliveryPersonList from './components/deliveryPersons/DeliveryPersonList';
 import DeliveryPersonForm from './components/deliveryPersons/DeliveryPersonForm';
 import DeliveryPersonView from './components/deliveryPersons/DeliveryPersonView';
+import ServiceTypeList from './components/serviceTypes/ServiceTypeList';
+import ServiceTypeForm from './components/serviceTypes/ServiceTypeForm';
+import ServiceTypeView from './components/serviceTypes/ServiceTypeView';
+import VehicleDefectList from './components/vehicleDefects/VehicleDefectList';
+import VehicleDefectForm from './components/vehicleDefects/VehicleDefectForm';
+import VehicleDefectView from './components/vehicleDefects/VehicleDefectView';
+import PreInspectionRecommendationList from './components/preInspectionRecommendations/PreInspectionRecommendationList';
+import PreInspectionRecommendationForm from './components/preInspectionRecommendations/PreInspectionRecommendationForm';
+import PreInspectionRecommendationView from './components/preInspectionRecommendations/PreInspectionRecommendationView';
 import ItemCategoryList from './components/itemCategories/ItemCategoryList';
 import ItemCategoryForm from './components/itemCategories/ItemCategoryForm';
 import ItemCategoryView from './components/itemCategories/ItemCategoryView';
@@ -38,6 +47,9 @@ import QuotationForm from './components/quotations/QuotationForm';
 import StockList from './components/stock/StockList';
 import StockAdjustment from './components/stock/StockAdjustment';
 import BillTemplateForm from './components/billTemplates/BillTemplateForm';
+import ServiceJobList from './components/serviceJobs/ServiceJobList';
+import ServiceJobForm from './components/serviceJobs/ServiceJobForm';
+import ServiceJobView from './components/serviceJobs/ServiceJobView';
 
 function App() {
   const { isAuthenticated, loading } = useAuth();
@@ -77,6 +89,21 @@ function App() {
                   <Route path="/delivery-persons/:id/edit" element={<DeliveryPersonForm />} />
                   <Route path="/delivery-persons/:id/view" element={<DeliveryPersonView />} />
                   
+                  <Route path="/service-types" element={<ServiceTypeList />} />
+                  <Route path="/service-types/new" element={<ServiceTypeForm />} />
+                  <Route path="/service-types/:id/edit" element={<ServiceTypeForm />} />
+                  <Route path="/service-types/:id/view" element={<ServiceTypeView />} />
+                  
+                  <Route path="/vehicle-defects" element={<VehicleDefectList />} />
+                  <Route path="/vehicle-defects/new" element={<VehicleDefectForm />} />
+                  <Route path="/vehicle-defects/:id/edit" element={<VehicleDefectForm />} />
+                  <Route path="/vehicle-defects/:id/view" element={<VehicleDefectView />} />
+                  
+                  <Route path="/pre-inspection-recommendations" element={<PreInspectionRecommendationList />} />
+                  <Route path="/pre-inspection-recommendations/new" element={<PreInspectionRecommendationForm />} />
+                  <Route path="/pre-inspection-recommendations/:id/edit" element={<PreInspectionRecommendationForm />} />
+                  <Route path="/pre-inspection-recommendations/:id/view" element={<PreInspectionRecommendationView />} />
+                  
                   <Route path="/item-categories" element={<ItemCategoryList />} />
                   <Route path="/item-categories/new" element={<ItemCategoryForm />} />
                   <Route path="/item-categories/:id/edit" element={<ItemCategoryForm />} />
@@ -114,6 +141,11 @@ function App() {
                   
                   <Route path="/stock" element={<StockList />} />
                   <Route path="/stock/adjust" element={<StockAdjustment />} />
+                  
+                  <Route path="/service-jobs" element={<ServiceJobList />} />
+                  <Route path="/service-jobs/new" element={<ServiceJobForm />} />
+                  <Route path="/service-jobs/:id/edit" element={<ServiceJobForm />} />
+                  <Route path="/service-jobs/:id/view" element={<ServiceJobView />} />
                   
                   <Route path="/bill-templates" element={<BillTemplateForm />} />
                 </Routes>
