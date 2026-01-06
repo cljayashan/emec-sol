@@ -6,10 +6,12 @@ import dotenv from 'dotenv';
 // Routes
 import authRoutes from './routes/authRoutes.js';
 import supplierRoutes from './routes/supplierRoutes.js';
+import customerRoutes from './routes/customerRoutes.js';
 import deliveryPersonRoutes from './routes/deliveryPersonRoutes.js';
 import itemCategoryRoutes from './routes/itemCategoryRoutes.js';
 import brandRoutes from './routes/brandRoutes.js';
 import vehicleModelRoutes from './routes/vehicleModelRoutes.js';
+import vehicleRoutes from './routes/vehicleRoutes.js';
 import itemRoutes from './routes/itemRoutes.js';
 import purchaseRoutes from './routes/purchaseRoutes.js';
 import saleRoutes from './routes/saleRoutes.js';
@@ -35,10 +37,12 @@ app.use('/api/auth', authRoutes);
 
 // Protected Routes (add authenticate middleware as needed)
 app.use('/api/suppliers', supplierRoutes);
+app.use('/api/customers', customerRoutes);
 app.use('/api/delivery-persons', deliveryPersonRoutes);
 app.use('/api/item-categories', itemCategoryRoutes);
 app.use('/api/vehicle-brands', brandRoutes);
 app.use('/api/vehicle-models', vehicleModelRoutes);
+app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/purchases', purchaseRoutes);
 app.use('/api/sales', saleRoutes);

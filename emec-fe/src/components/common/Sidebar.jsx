@@ -27,6 +27,22 @@ const Sidebar = () => {
       ]
     },
     {
+      key: 'customer',
+      label: 'Customer',
+      icon: '👤',
+      children: [
+        { path: '/customers', label: 'Manage' }
+      ]
+    },
+    {
+      key: 'workshop',
+      label: 'Workshop',
+      icon: '🔧',
+      children: [
+        { path: '/vehicles', label: 'Register Vehicle' }
+      ]
+    },
+    {
       key: 'transactions',
       label: 'Transactions',
       icon: '💰',

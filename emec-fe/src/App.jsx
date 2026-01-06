@@ -8,6 +8,9 @@ import Register from './components/auth/Register';
 import SupplierList from './components/suppliers/SupplierList';
 import SupplierForm from './components/suppliers/SupplierForm';
 import SupplierView from './components/suppliers/SupplierView';
+import CustomerList from './components/customers/CustomerList';
+import CustomerForm from './components/customers/CustomerForm';
+import CustomerView from './components/customers/CustomerView';
 import DeliveryPersonList from './components/deliveryPersons/DeliveryPersonList';
 import DeliveryPersonForm from './components/deliveryPersons/DeliveryPersonForm';
 import DeliveryPersonView from './components/deliveryPersons/DeliveryPersonView';
@@ -20,6 +23,9 @@ import BrandView from './components/brands/BrandView';
 import VehicleModelList from './components/vehicleModels/VehicleModelList';
 import VehicleModelForm from './components/vehicleModels/VehicleModelForm';
 import VehicleModelView from './components/vehicleModels/VehicleModelView';
+import VehicleList from './components/vehicles/VehicleList';
+import VehicleForm from './components/vehicles/VehicleForm';
+import VehicleView from './components/vehicles/VehicleView';
 import ItemList from './components/items/ItemList';
 import ItemForm from './components/items/ItemForm';
 import ItemView from './components/items/ItemView';
@@ -61,6 +67,11 @@ function App() {
                   <Route path="/suppliers/:id/edit" element={<SupplierForm />} />
                   <Route path="/suppliers/:id/view" element={<SupplierView />} />
                   
+                  <Route path="/customers" element={<CustomerList />} />
+                  <Route path="/customers/new" element={<CustomerForm />} />
+                  <Route path="/customers/:id/edit" element={<CustomerForm />} />
+                  <Route path="/customers/:id/view" element={<CustomerView />} />
+                  
                   <Route path="/delivery-persons" element={<DeliveryPersonList />} />
                   <Route path="/delivery-persons/new" element={<DeliveryPersonForm />} />
                   <Route path="/delivery-persons/:id/edit" element={<DeliveryPersonForm />} />
@@ -80,6 +91,11 @@ function App() {
                   <Route path="/vehicle-models/new" element={<VehicleModelForm />} />
                   <Route path="/vehicle-models/:id/edit" element={<VehicleModelForm />} />
                   <Route path="/vehicle-models/:id/view" element={<VehicleModelView />} />
+                  
+                  <Route path="/vehicles" element={<VehicleList />} />
+                  <Route path="/vehicles/new" element={<VehicleForm />} />
+                  <Route path="/vehicles/:id/edit" element={<VehicleForm />} />
+                  <Route path="/vehicles/:id/view" element={<VehicleView />} />
                   
                   <Route path="/items" element={<ItemList />} />
                   <Route path="/items/new" element={<ItemForm />} />

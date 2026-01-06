@@ -1,28 +1,36 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 'name', value = '' }) => {
+const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 'name', value = '', renderItem }) => {
   const [searchTerm, setSearchTerm] = useState(value);
   const [filteredItems, setFilteredItems] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const wrapperRef = useRef(null);
 
   useEffect(() => {
-    setSearchTerm(value);
+    setSearchTerm(value != null ? String(value) : '');
   }, [value]);
 
   useEffect(() => {
-    if (searchTerm) {
-      const filtered = items.filter((item) =>
-        item[searchKey]?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredItems(filtered);
-      setShowDropdown(true);
-    } else {
-      // Show all items when input is empty and focused, or when clearing
-      setFilteredItems(items);
-      setShowDropdown(false);
+    // Only filter items when dropdown is shown (user is interacting)
+    if (showDropdown) {
+      if (searchTerm) {
+        const searchTermStr = String(searchTerm).toLowerCase();
+        const filtered = items.filter((item) => {
+          // If renderItem is provided, search in the rendered text, otherwise use searchKey
+          if (renderItem) {
+            const displayText = String(renderItem(item)).toLowerCase();
+            return displayText.includes(searchTermStr);
+          }
+          const itemValue = item[searchKey];
+          return itemValue != null && String(itemValue).toLowerCase().includes(searchTermStr);
+        });
+        setFilteredItems(filtered);
+      } else {
+        // Show all items when input is empty
+        setFilteredItems(items);
+      }
     }
-  }, [searchTerm, items, searchKey]);
+  }, [searchTerm, items, searchKey, renderItem, showDropdown]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -53,8 +61,22 @@ const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 
   };
 
   const handleInputFocus = () => {
-    if (!searchTerm && items.length > 0) {
-      setFilteredItems(items);
+    if (items.length > 0) {
+      // Filter items based on current searchTerm when focusing
+      if (searchTerm) {
+        const searchTermStr = String(searchTerm).toLowerCase();
+        const filtered = items.filter((item) => {
+          if (renderItem) {
+            const displayText = String(renderItem(item)).toLowerCase();
+            return displayText.includes(searchTermStr);
+          }
+          const itemValue = item[searchKey];
+          return itemValue != null && String(itemValue).toLowerCase().includes(searchTermStr);
+        });
+        setFilteredItems(filtered);
+      } else {
+        setFilteredItems(items);
+      }
       setShowDropdown(true);
     }
   };
@@ -63,7 +85,7 @@ const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 
     <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
       <input
         type="text"
-        value={searchTerm}
+        value={searchTerm != null ? String(searchTerm) : ''}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
         placeholder={placeholder}
@@ -98,7 +120,7 @@ const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 
               onMouseEnter={(e) => (e.target.style.backgroundColor = '#f0f0f0')}
               onMouseLeave={(e) => (e.target.style.backgroundColor = 'white')}
             >
-              {item[searchKey]}
+              {renderItem ? renderItem(item) : item[searchKey]}
             </div>
           ))}
         </div>
