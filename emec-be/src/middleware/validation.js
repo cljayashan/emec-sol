@@ -32,6 +32,11 @@ export const validateServiceType = [
   body('description').optional().trim()
 ];
 
+export const validateVehicleDefect = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('description').optional().trim()
+];
+
 export const validateItemCategory = [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('description').optional().trim()

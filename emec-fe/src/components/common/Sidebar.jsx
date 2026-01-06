@@ -21,6 +21,7 @@ const Sidebar = () => {
         { path: '/suppliers', label: 'Suppliers' },
         { path: '/delivery-persons', label: 'Delivery Persons' },
         { path: '/service-types', label: 'Service Types' },
+        { path: '/vehicle-defects', label: 'Vehicle Defects' },
         { path: '/item-categories', label: 'Item Categories' },
         { path: '/brands', label: 'Vehicle Brands' },
         { path: '/vehicle-models', label: 'Vehicle Models' },

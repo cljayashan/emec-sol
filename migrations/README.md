@@ -10,6 +10,7 @@ This folder contains database migration scripts that should be run sequentially 
 - **004_add_customers.sql** - Adds customers table for customer management
 - **005_add_remarks_to_vehicles.sql** - Adds remarks column to vehicles table
 - **006_add_service_types.sql** - Adds service_types table for managing service types
+- **007_add_vehicle_defects.sql** - Adds vehicle_defects table for managing vehicle defects
 
 ## How to Run Migrations
 
