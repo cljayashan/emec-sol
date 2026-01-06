@@ -14,6 +14,9 @@ import CustomerView from './components/customers/CustomerView';
 import DeliveryPersonList from './components/deliveryPersons/DeliveryPersonList';
 import DeliveryPersonForm from './components/deliveryPersons/DeliveryPersonForm';
 import DeliveryPersonView from './components/deliveryPersons/DeliveryPersonView';
+import ServiceTypeList from './components/serviceTypes/ServiceTypeList';
+import ServiceTypeForm from './components/serviceTypes/ServiceTypeForm';
+import ServiceTypeView from './components/serviceTypes/ServiceTypeView';
 import ItemCategoryList from './components/itemCategories/ItemCategoryList';
 import ItemCategoryForm from './components/itemCategories/ItemCategoryForm';
 import ItemCategoryView from './components/itemCategories/ItemCategoryView';
@@ -76,6 +79,11 @@ function App() {
                   <Route path="/delivery-persons/new" element={<DeliveryPersonForm />} />
                   <Route path="/delivery-persons/:id/edit" element={<DeliveryPersonForm />} />
                   <Route path="/delivery-persons/:id/view" element={<DeliveryPersonView />} />
+                  
+                  <Route path="/service-types" element={<ServiceTypeList />} />
+                  <Route path="/service-types/new" element={<ServiceTypeForm />} />
+                  <Route path="/service-types/:id/edit" element={<ServiceTypeForm />} />
+                  <Route path="/service-types/:id/view" element={<ServiceTypeView />} />
                   
                   <Route path="/item-categories" element={<ItemCategoryList />} />
                   <Route path="/item-categories/new" element={<ItemCategoryForm />} />
