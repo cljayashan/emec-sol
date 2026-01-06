@@ -9,6 +9,12 @@ const Sidebar = () => {
   const [expandedMenus, setExpandedMenus] = useState({});
 
   const isActive = (path) => {
+    if (path === '/service-jobs') {
+      // For service jobs list, only match exact path or view/edit routes, not /new
+      return location.pathname === path || 
+             (location.pathname.startsWith(path + '/') && 
+              !location.pathname.startsWith(path + '/new'));
+    }
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
@@ -42,6 +48,8 @@ const Sidebar = () => {
       label: 'Workshop',
       icon: '🔧',
       children: [
+        { path: '/service-jobs', label: 'Service Job List' },
+        { path: '/service-jobs/new', label: 'Create Service Job' },
         { path: '/vehicles', label: 'Register Vehicle' }
       ]
     },

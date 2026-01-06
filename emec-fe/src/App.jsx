@@ -47,6 +47,9 @@ import QuotationForm from './components/quotations/QuotationForm';
 import StockList from './components/stock/StockList';
 import StockAdjustment from './components/stock/StockAdjustment';
 import BillTemplateForm from './components/billTemplates/BillTemplateForm';
+import ServiceJobList from './components/serviceJobs/ServiceJobList';
+import ServiceJobForm from './components/serviceJobs/ServiceJobForm';
+import ServiceJobView from './components/serviceJobs/ServiceJobView';
 
 function App() {
   const { isAuthenticated, loading } = useAuth();
@@ -138,6 +141,11 @@ function App() {
                   
                   <Route path="/stock" element={<StockList />} />
                   <Route path="/stock/adjust" element={<StockAdjustment />} />
+                  
+                  <Route path="/service-jobs" element={<ServiceJobList />} />
+                  <Route path="/service-jobs/new" element={<ServiceJobForm />} />
+                  <Route path="/service-jobs/:id/edit" element={<ServiceJobForm />} />
+                  <Route path="/service-jobs/:id/view" element={<ServiceJobView />} />
                   
                   <Route path="/bill-templates" element={<BillTemplateForm />} />
                 </Routes>
