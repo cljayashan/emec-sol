@@ -11,6 +11,7 @@ This folder contains database migration scripts that should be run sequentially 
 - **005_add_remarks_to_vehicles.sql** - Adds remarks column to vehicles table
 - **006_add_service_types.sql** - Adds service_types table for managing service types
 - **007_add_vehicle_defects.sql** - Adds vehicle_defects table for managing vehicle defects
+- **008_add_pre_inspection_recommendations.sql** - Adds pre_inspection_recommendations table for managing pre inspection recommendations
 
 ## How to Run Migrations
 

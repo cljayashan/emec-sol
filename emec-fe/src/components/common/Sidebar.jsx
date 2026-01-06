@@ -22,6 +22,7 @@ const Sidebar = () => {
         { path: '/delivery-persons', label: 'Delivery Persons' },
         { path: '/service-types', label: 'Service Types' },
         { path: '/vehicle-defects', label: 'Vehicle Defects' },
+        { path: '/pre-inspection-recommendations', label: 'Pre Inspection Recommendations' },
         { path: '/item-categories', label: 'Item Categories' },
         { path: '/brands', label: 'Vehicle Brands' },
         { path: '/vehicle-models', label: 'Vehicle Models' },

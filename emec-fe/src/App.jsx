@@ -20,6 +20,9 @@ import ServiceTypeView from './components/serviceTypes/ServiceTypeView';
 import VehicleDefectList from './components/vehicleDefects/VehicleDefectList';
 import VehicleDefectForm from './components/vehicleDefects/VehicleDefectForm';
 import VehicleDefectView from './components/vehicleDefects/VehicleDefectView';
+import PreInspectionRecommendationList from './components/preInspectionRecommendations/PreInspectionRecommendationList';
+import PreInspectionRecommendationForm from './components/preInspectionRecommendations/PreInspectionRecommendationForm';
+import PreInspectionRecommendationView from './components/preInspectionRecommendations/PreInspectionRecommendationView';
 import ItemCategoryList from './components/itemCategories/ItemCategoryList';
 import ItemCategoryForm from './components/itemCategories/ItemCategoryForm';
 import ItemCategoryView from './components/itemCategories/ItemCategoryView';
@@ -92,6 +95,11 @@ function App() {
                   <Route path="/vehicle-defects/new" element={<VehicleDefectForm />} />
                   <Route path="/vehicle-defects/:id/edit" element={<VehicleDefectForm />} />
                   <Route path="/vehicle-defects/:id/view" element={<VehicleDefectView />} />
+                  
+                  <Route path="/pre-inspection-recommendations" element={<PreInspectionRecommendationList />} />
+                  <Route path="/pre-inspection-recommendations/new" element={<PreInspectionRecommendationForm />} />
+                  <Route path="/pre-inspection-recommendations/:id/edit" element={<PreInspectionRecommendationForm />} />
+                  <Route path="/pre-inspection-recommendations/:id/view" element={<PreInspectionRecommendationView />} />
                   
                   <Route path="/item-categories" element={<ItemCategoryList />} />
                   <Route path="/item-categories/new" element={<ItemCategoryForm />} />

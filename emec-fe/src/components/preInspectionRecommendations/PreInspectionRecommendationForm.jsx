@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { serviceTypeService } from '../../services/serviceTypeService';
+import { preInspectionRecommendationService } from '../../services/preInspectionRecommendationService';
 import { useForm } from '../../hooks/useForm';
 
-const ServiceTypeForm = () => {
+const PreInspectionRecommendationForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEdit = !!id;
@@ -14,21 +14,21 @@ const ServiceTypeForm = () => {
 
   useEffect(() => {
     if (isEdit) {
-      loadServiceType();
+      loadPreInspectionRecommendation();
     } else {
       // Auto-focus name field when creating new record
       nameInputRef.current?.focus();
     }
   }, [id]);
 
-  const loadServiceType = async () => {
+  const loadPreInspectionRecommendation = async () => {
     try {
-      const response = await serviceTypeService.getById(id);
+      const response = await preInspectionRecommendationService.getById(id);
       setValue('name', response.data.data.name);
       setValue('description', response.data.data.description || '');
     } catch (error) {
-      toast.error('Failed to load service type');
-      navigate('/service-types');
+      toast.error('Failed to load pre inspection recommendation');
+      navigate('/pre-inspection-recommendations');
     }
   };
 
@@ -37,13 +37,13 @@ const ServiceTypeForm = () => {
     setLoading(true);
     try {
       if (isEdit) {
-        await serviceTypeService.update(id, values);
-        toast.success('Service type updated successfully');
+        await preInspectionRecommendationService.update(id, values);
+        toast.success('Pre inspection recommendation updated successfully');
       } else {
-        await serviceTypeService.create(values);
-        toast.success('Service type created successfully');
+        await preInspectionRecommendationService.create(values);
+        toast.success('Pre inspection recommendation created successfully');
       }
-      navigate('/service-types');
+      navigate('/pre-inspection-recommendations');
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Operation failed';
       toast.error(errorMessage);
@@ -55,7 +55,7 @@ const ServiceTypeForm = () => {
   return (
     <div className="card">
       <div className="card-header">
-        <h2 className="card-title">{isEdit ? 'Edit Service Type' : 'Add New Service Type'}</h2>
+        <h2 className="card-title">{isEdit ? 'Edit Pre Inspection Recommendation' : 'Add New Pre Inspection Recommendation'}</h2>
       </div>
       
       <form onSubmit={handleSubmit}>
@@ -85,7 +85,7 @@ const ServiceTypeForm = () => {
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? 'Saving...' : isEdit ? 'Update' : 'Create'}
           </button>
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/service-types')}>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/pre-inspection-recommendations')}>
             Cancel
           </button>
         </div>
@@ -94,5 +94,5 @@ const ServiceTypeForm = () => {
   );
 };
 
-export default ServiceTypeForm;
+export default PreInspectionRecommendationForm;
 

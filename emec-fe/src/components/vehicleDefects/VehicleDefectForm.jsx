@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { vehicleDefectService } from '../../services/vehicleDefectService';
@@ -10,10 +10,14 @@ const VehicleDefectForm = () => {
   const isEdit = !!id;
   const { values, handleChange, setValue, reset } = useForm({ name: '', description: '' });
   const [loading, setLoading] = useState(false);
+  const nameInputRef = useRef(null);
 
   useEffect(() => {
     if (isEdit) {
       loadVehicleDefect();
+    } else {
+      // Auto-focus name field when creating new record
+      nameInputRef.current?.focus();
     }
   }, [id]);
 
@@ -58,11 +62,13 @@ const VehicleDefectForm = () => {
         <div className="form-group">
           <label>Name *</label>
           <input
+            ref={nameInputRef}
             type="text"
             name="name"
             value={values.name}
             onChange={handleChange}
             required
+            autoFocus
           />
         </div>
         
