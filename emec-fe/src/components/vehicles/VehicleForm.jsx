@@ -14,7 +14,7 @@ const VehicleForm = () => {
   const navigate = useNavigate();
   const isEdit = !!id;
   const { values, handleChange, setValue, setValues } = useForm({ 
-    customer: '',
+    customer_id: '',
     vehicle_type: '',
     reg_no: '',
     brand_id: '',
@@ -73,16 +73,16 @@ const VehicleForm = () => {
   }, [id]);
 
   useEffect(() => {
-    // Update selected customer when customers are loaded and we have a customer name
-    if (customers.length > 0 && values.customer) {
-      const customer = customers.find(c => c.full_name === values.customer);
+    // Update selected customer when customers are loaded and we have a customer_id
+    if (customers.length > 0 && values.customer_id) {
+      const customer = customers.find(c => c.id === values.customer_id);
       if (customer && (!selectedCustomer || selectedCustomer.id !== customer.id)) {
         setSelectedCustomer(customer);
       }
-    } else if (!values.customer) {
+    } else if (!values.customer_id) {
       setSelectedCustomer(null);
     }
-  }, [customers, values.customer]);
+  }, [customers, values.customer_id]);
 
   useEffect(() => {
     // Update selected vehicle type when vehicle_type value changes
@@ -204,7 +204,7 @@ const VehicleForm = () => {
       if (response.data && response.data.data) {
         const newCustomer = response.data.data;
         setSelectedCustomer(newCustomer);
-        setValue('customer', newCustomer.full_name);
+        setValue('customer_id', newCustomer.id);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to create customer');
@@ -237,7 +237,7 @@ const VehicleForm = () => {
         const vehicle = response.data.data;
         
         setValues({
-          customer: vehicle.customer || '',
+          customer_id: vehicle.customer_id || '',
           vehicle_type: vehicle.vehicle_type || '',
           reg_no: vehicle.reg_no || '',
           brand_id: vehicle.brand_id || '',
@@ -342,15 +342,15 @@ const VehicleForm = () => {
                 onSelect={(customer) => {
                   if (customer) {
                     setSelectedCustomer(customer);
-                    setValue('customer', customer.full_name);
+                    setValue('customer_id', customer.id);
                   } else {
                     setSelectedCustomer(null);
-                    setValue('customer', '');
+                    setValue('customer_id', '');
                   }
                 }}
                 placeholder="Search customer..."
                 searchKey="full_name"
-                value={selectedCustomer?.full_name || values.customer || ''}
+                value={selectedCustomer?.full_name || ''}
                 renderItem={(customer) => {
                   const mobile = customer.mobile1 || '';
                   const nic = customer.nic || '';

@@ -10,18 +10,26 @@ class Vehicle {
     let query = `
       SELECT v.*, 
              vb.name as brand_name,
-             vm.name as model_name
+             vm.name as model_name,
+             c.full_name as customer_name,
+             c.name_with_initials as customer_name_with_initials,
+             c.nic as customer_nic,
+             c.mobile1 as customer_mobile1,
+             c.mobile2 as customer_mobile2,
+             c.address as customer_address,
+             c.email_address as customer_email
       FROM vehicles v
       LEFT JOIN vehicle_brands vb ON v.brand_id = vb.id
       LEFT JOIN vehicle_models vm ON v.model_id = vm.id
+      LEFT JOIN customers c ON v.customer_id = c.id
       WHERE v.is_deleted = 0
     `;
     const params = [];
 
     if (search) {
-      query += ` AND (v.customer LIKE ? OR v.reg_no LIKE ? OR vb.name LIKE ? OR vm.name LIKE ?)`;
+      query += ` AND (c.full_name LIKE ? OR v.reg_no LIKE ? OR vb.name LIKE ? OR vm.name LIKE ? OR c.mobile1 LIKE ? OR c.mobile2 LIKE ?)`;
       const searchPattern = `%${search}%`;
-      params.push(searchPattern, searchPattern, searchPattern, searchPattern);
+      params.push(searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern);
     }
 
     query += ` ORDER BY v.created_at DESC LIMIT ${offset}, ${limitNum}`;
@@ -32,13 +40,14 @@ class Vehicle {
     let countQuery = `SELECT COUNT(*) as total FROM vehicles v 
                       LEFT JOIN vehicle_brands vb ON v.brand_id = vb.id
                       LEFT JOIN vehicle_models vm ON v.model_id = vm.id
+                      LEFT JOIN customers c ON v.customer_id = c.id
                       WHERE v.is_deleted = 0`;
     const countParams = [];
     
     if (search) {
-      countQuery += ` AND (v.customer LIKE ? OR v.reg_no LIKE ? OR vb.name LIKE ? OR vm.name LIKE ?)`;
+      countQuery += ` AND (c.full_name LIKE ? OR v.reg_no LIKE ? OR vb.name LIKE ? OR vm.name LIKE ? OR c.mobile1 LIKE ? OR c.mobile2 LIKE ?)`;
       const searchPattern = `%${search}%`;
-      countParams.push(searchPattern, searchPattern, searchPattern, searchPattern);
+      countParams.push(searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern);
     }
     
     const [count] = await pool.execute(countQuery, countParams);
@@ -49,10 +58,18 @@ class Vehicle {
     const [rows] = await pool.execute(
       `SELECT v.*, 
               vb.name as brand_name,
-              vm.name as model_name
+              vm.name as model_name,
+              c.full_name as customer_name,
+              c.name_with_initials as customer_name_with_initials,
+              c.nic as customer_nic,
+              c.mobile1 as customer_mobile1,
+              c.mobile2 as customer_mobile2,
+              c.address as customer_address,
+              c.email_address as customer_email
        FROM vehicles v
        LEFT JOIN vehicle_brands vb ON v.brand_id = vb.id
        LEFT JOIN vehicle_models vm ON v.model_id = vm.id
+       LEFT JOIN customers c ON v.customer_id = c.id
        WHERE v.id = ? AND v.is_deleted = 0`,
       [id]
     );
@@ -62,11 +79,11 @@ class Vehicle {
   static async create(data) {
     const id = generateUUID();
     await pool.execute(
-      `INSERT INTO vehicles (id, customer, vehicle_type, reg_no, brand_id, model_id, version, year_of_manufacture, year_of_registration, remarks) 
+      `INSERT INTO vehicles (id, customer_id, vehicle_type, reg_no, brand_id, model_id, version, year_of_manufacture, year_of_registration, remarks) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
-        data.customer,
+        data.customer_id || null,
         data.vehicle_type || null,
         data.reg_no,
         data.brand_id,
@@ -82,10 +99,10 @@ class Vehicle {
 
   static async update(id, data) {
     await pool.execute(
-      `UPDATE vehicles SET customer = ?, vehicle_type = ?, reg_no = ?, brand_id = ?, model_id = ?, 
+      `UPDATE vehicles SET customer_id = ?, vehicle_type = ?, reg_no = ?, brand_id = ?, model_id = ?, 
        version = ?, year_of_manufacture = ?, year_of_registration = ?, remarks = ? WHERE id = ?`,
       [
-        data.customer,
+        data.customer_id || null,
         data.vehicle_type || null,
         data.reg_no,
         data.brand_id,

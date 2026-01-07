@@ -70,7 +70,7 @@ const VehicleList = () => {
 
   const columns = [
     { key: 'reg_no', label: 'Registration No' },
-    { key: 'customer', label: 'Customer' },
+    { key: 'customer_name', label: 'Customer' },
     { key: 'brand_name', label: 'Brand' },
     { key: 'model_name', label: 'Model' },
     { key: 'vehicle_type', label: 'Vehicle Type' }

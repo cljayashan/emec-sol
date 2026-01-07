@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { quotationService } from '../../services/quotationService';
 import { itemService } from '../../services/itemService';
+import { customerService } from '../../services/customerService';
 import AutoComplete from '../common/AutoComplete';
 import { generateQuotationNumber } from '../../utils/helpers';
 import { formatDate } from '../../utils/helpers';
@@ -15,8 +16,7 @@ const QuotationForm = () => {
   const [formData, setFormData] = useState({
     quotation_number: generateQuotationNumber(),
     quotation_date: formatDate(new Date()),
-    customer_name: '',
-    customer_contact: '',
+    customer_id: '',
     items: [],
     subtotal: 0,
     labour_charge: 0,
@@ -25,7 +25,9 @@ const QuotationForm = () => {
     status: QUOTATION_STATUS.PENDING
   });
   const [items, setItems] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [itemForm, setItemForm] = useState({
     item_id: '',
     quantity: '',
@@ -36,10 +38,14 @@ const QuotationForm = () => {
 
   useEffect(() => {
     loadItems();
-    if (isEdit) {
+    loadCustomers();
+  }, []);
+
+  useEffect(() => {
+    if (isEdit && customers.length > 0) {
       loadQuotation();
     }
-  }, [id]);
+  }, [id, customers]);
 
   useEffect(() => {
     calculateTotals();
@@ -54,6 +60,15 @@ const QuotationForm = () => {
     }
   };
 
+  const loadCustomers = async () => {
+    try {
+      const response = await customerService.getAll(1, 1000);
+      setCustomers(response.data.data.data);
+    } catch (error) {
+      toast.error('Failed to load customers');
+    }
+  };
+
   const loadQuotation = async () => {
     try {
       const response = await quotationService.getById(id);
@@ -61,8 +76,7 @@ const QuotationForm = () => {
       setFormData({
         quotation_number: quotation.quotation_number,
         quotation_date: formatDate(quotation.quotation_date),
-        customer_name: quotation.customer_name || '',
-        customer_contact: quotation.customer_contact || '',
+        customer_id: quotation.customer_id || '',
         items: quotation.items || [],
         subtotal: quotation.subtotal || 0,
         labour_charge: quotation.labour_charge || 0,
@@ -70,6 +84,14 @@ const QuotationForm = () => {
         total_amount: quotation.total_amount || 0,
         status: quotation.status || QUOTATION_STATUS.PENDING
       });
+      
+      // Set selected customer if customer_id exists
+      if (quotation.customer_id && customers.length > 0) {
+        const customer = customers.find(c => c.id === quotation.customer_id);
+        if (customer) {
+          setSelectedCustomer(customer);
+        }
+      }
     } catch (error) {
       toast.error('Failed to load quotation');
       navigate('/quotations');
@@ -198,20 +220,27 @@ const QuotationForm = () => {
           </div>
           
           <div className="form-group">
-            <label>Customer Name</label>
-            <input
-              type="text"
-              value={formData.customer_name}
-              onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
-            />
-          </div>
-          
-          <div className="form-group">
-            <label>Customer Contact</label>
-            <input
-              type="text"
-              value={formData.customer_contact}
-              onChange={(e) => setFormData({ ...formData, customer_contact: e.target.value })}
+            <label>Customer</label>
+            <AutoComplete
+              items={customers}
+              onSelect={(customer) => {
+                if (customer) {
+                  setSelectedCustomer(customer);
+                  setFormData({ ...formData, customer_id: customer.id });
+                } else {
+                  setSelectedCustomer(null);
+                  setFormData({ ...formData, customer_id: '' });
+                }
+              }}
+              placeholder="Search customer..."
+              searchKey="full_name"
+              value={selectedCustomer?.full_name || ''}
+              renderItem={(customer) => {
+                const mobile = customer.mobile1 || '';
+                const nic = customer.nic || '';
+                const parts = [customer.full_name, mobile, nic].filter(part => part);
+                return parts.join(' | ');
+              }}
             />
           </div>
           
