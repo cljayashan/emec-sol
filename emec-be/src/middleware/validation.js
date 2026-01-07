@@ -59,7 +59,7 @@ export const validateVehicleModel = [
 ];
 
 export const validateVehicle = [
-  body('customer').trim().notEmpty().withMessage('Customer is required'),
+  body('customer_id').optional().isUUID().withMessage('Customer ID must be a valid UUID'),
   body('vehicle_type').optional().trim(),
   body('reg_no').trim().notEmpty().withMessage('Registration number is required'),
   body('brand_id').trim().notEmpty().isUUID().withMessage('Brand ID is required and must be a valid UUID'),
@@ -105,6 +105,7 @@ export const validateSale = [
 export const validateQuotation = [
   body('quotation_number').trim().notEmpty().withMessage('Quotation number is required'),
   body('quotation_date').isISO8601().withMessage('Valid quotation date is required'),
+  body('customer_id').optional().isUUID().withMessage('Customer ID must be a valid UUID'),
   body('items').isArray().notEmpty().withMessage('At least one item is required')
 ];
 
