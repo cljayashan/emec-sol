@@ -270,19 +270,22 @@ const ServiceJobForm = () => {
       setSelectedVehicle(vehicle);
       setValue('vehicle_id', vehicle.id);
       
-      // Set owner name from vehicle customer field
-      setOwnerName(vehicle.customer || '');
+      // Set owner name from vehicle customer field (check both customer_name and customer for compatibility)
+      const customerName = vehicle.customer_name || vehicle.customer || '';
+      setOwnerName(customerName);
       
       // Try to find customer by name to get mobile number
-      if (vehicle.customer && customers.length > 0) {
-        const customer = customers.find(c => c.full_name === vehicle.customer);
+      if (customerName && customers.length > 0) {
+        const customer = customers.find(c => c.full_name === customerName);
         if (customer) {
           setOwnerMobile(customer.mobile1 || customer.mobile2 || '');
         } else {
-          setOwnerMobile('');
+          // Try to get mobile from vehicle data if available
+          setOwnerMobile(vehicle.customer_mobile1 || vehicle.customer_mobile2 || '');
         }
       } else {
-        setOwnerMobile('');
+        // Try to get mobile from vehicle data if available
+        setOwnerMobile(vehicle.customer_mobile1 || vehicle.customer_mobile2 || '');
       }
     } else {
       setSelectedVehicle(null);
@@ -427,7 +430,15 @@ const ServiceJobForm = () => {
   };
 
   const renderVehicleItem = (vehicle) => {
-    return `${vehicle.reg_no} - ${vehicle.customer}${vehicle.vehicle_brand_name ? ` (${vehicle.vehicle_brand_name} ${vehicle.vehicle_model_name || ''})` : ''}`;
+    const customerName = vehicle.customer_name || vehicle.customer || 'No Customer';
+    const brandName = vehicle.brand_name || vehicle.vehicle_brand_name || '';
+    const modelName = vehicle.model_name || vehicle.vehicle_model_name || '';
+    const brandModel = brandName && modelName ? `${brandName} ${modelName}` : '';
+    const parts = [vehicle.reg_no, customerName];
+    if (brandModel) {
+      parts.push(brandModel);
+    }
+    return parts.join(' | ');
   };
 
   return (
