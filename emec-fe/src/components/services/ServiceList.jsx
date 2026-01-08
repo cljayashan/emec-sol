@@ -14,7 +14,6 @@ const ServiceList = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { isOpen, message, confirm, handleConfirm, handleCancel } = useConfirm();
-  const [deleteId, setDeleteId] = useState(null);
   
   const {
     currentPage,
@@ -63,18 +62,27 @@ const ServiceList = () => {
     } else if (action === 'edit') {
       navigate(`/services/${row.id}/edit`);
     } else if (action === 'delete') {
-      setDeleteId(row.id);
-      confirm('Are you sure you want to delete this service?', handleDelete);
+      const serviceId = row.id;
+      if (!serviceId) {
+        toast.error('Invalid service ID');
+        return;
+      }
+      confirm('Are you sure you want to delete this service?', () => handleDelete(serviceId));
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (id) => {
+    if (!id) {
+      toast.error('Service ID is required');
+      return;
+    }
     try {
-      await serviceService.delete(deleteId);
+      await serviceService.delete(id);
       toast.success('Service deleted successfully');
       loadServices();
     } catch (error) {
-      toast.error('Failed to delete service');
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to delete service';
+      toast.error(errorMessage);
     }
   };
 

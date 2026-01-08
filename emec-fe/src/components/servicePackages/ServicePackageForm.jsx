@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { servicePackageService } from '../../services/servicePackageService';
@@ -64,6 +64,14 @@ const ServicePackageForm = () => {
   const handleRemoveService = (serviceId) => {
     setSelectedServices(prev => prev.filter(id => id !== serviceId));
   };
+
+  // Calculate total price from selected services
+  const totalPrice = useMemo(() => {
+    return selectedServices.reduce((sum, serviceId) => {
+      const service = services.find(s => s.id === serviceId);
+      return sum + parseFloat(service?.price || 0);
+    }, 0);
+  }, [selectedServices, services]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -233,6 +241,23 @@ const ServicePackageForm = () => {
                   });
                 })()}
               </div>
+              {selectedServices.length > 0 && (
+                <div style={{ 
+                  padding: '15px', 
+                  borderTop: '2px solid #ddd',
+                  backgroundColor: '#fff',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <div style={{ fontWeight: 600, fontSize: '16px' }}>
+                    Total:
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: '18px', color: '#28a745' }}>
+                    Rs. {totalPrice.toFixed(2)}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

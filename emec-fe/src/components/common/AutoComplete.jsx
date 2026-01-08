@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 'name', value = '', renderItem, searchOnlyKey = false }) => {
+const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 'name', value = '', renderItem, searchOnlyKey = false, getItemStyle }) => {
   const [searchTerm, setSearchTerm] = useState(value);
   const [filteredItems, setFilteredItems] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -134,21 +134,43 @@ const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
           }}
         >
-          {filteredItems.map((item, index) => (
-            <div
-              key={item.id || index}
-              onClick={() => handleSelect(item)}
-              style={{
-                padding: '10px',
-                cursor: 'pointer',
-                borderBottom: '1px solid #eee'
-              }}
-              onMouseEnter={(e) => (e.target.style.backgroundColor = '#f0f0f0')}
-              onMouseLeave={(e) => (e.target.style.backgroundColor = 'white')}
-            >
-              {renderItem ? renderItem(item) : item[searchKey]}
-            </div>
-          ))}
+          {filteredItems.map((item, index) => {
+            const customStyle = getItemStyle ? getItemStyle(item) : {};
+            const hasCustomBg = !!customStyle.backgroundColor;
+            const baseStyle = {
+              padding: '10px',
+              cursor: 'pointer',
+              borderBottom: '1px solid #eee',
+              ...customStyle
+            };
+            const hoverBgColor = hasCustomBg ? customStyle.backgroundColor : '#f0f0f0';
+            const defaultBgColor = customStyle.backgroundColor || 'white';
+            
+            return (
+              <div
+                key={item.id || index}
+                onClick={() => handleSelect(item)}
+                style={baseStyle}
+                onMouseEnter={(e) => {
+                  if (hasCustomBg) {
+                    // Darken the red background slightly on hover
+                    e.target.style.backgroundColor = '#ffcdd2';
+                    e.target.style.opacity = '0.9';
+                  } else {
+                    e.target.style.backgroundColor = hoverBgColor;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = defaultBgColor;
+                  if (hasCustomBg) {
+                    e.target.style.opacity = '1';
+                  }
+                }}
+              >
+                {renderItem ? renderItem(item) : item[searchKey]}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

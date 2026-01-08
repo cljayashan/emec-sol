@@ -170,7 +170,14 @@ const ServiceJobList = () => {
       </div>
       
       {loading ? (
-        <Spinner size={50} color="#007bff" />
+        <div style={{ 
+          minHeight: '300px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <Spinner size={50} color="#007bff" />
+        </div>
       ) : (
         <>
           {serviceJobs.length === 0 ? (
