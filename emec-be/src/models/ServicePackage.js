@@ -7,17 +7,24 @@ class ServicePackage {
     const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 10));
     const offset = Math.max(0, (pageNum - 1) * limitNum);
     
-    let query = `SELECT * FROM service_packages WHERE is_deleted = 0`;
+    let query = `
+      SELECT 
+        sp.*,
+        COALESCE(SUM(s.price), 0) as total_price
+      FROM service_packages sp
+      LEFT JOIN service_service_packages ssp ON sp.id = ssp.service_package_id
+      LEFT JOIN services s ON ssp.service_id = s.id AND s.is_deleted = 0
+      WHERE sp.is_deleted = 0
+    `;
     const params = [];
 
     if (search) {
-      query += ` AND (name LIKE ? OR description LIKE ?)`;
+      query += ` AND (sp.name LIKE ? OR sp.description LIKE ?)`;
       const searchPattern = `%${search}%`;
       params.push(searchPattern, searchPattern);
     }
 
-    // MySQL2 requires LIMIT values to be numbers, not placeholders
-    query += ` ORDER BY created_at DESC LIMIT ${offset}, ${limitNum}`;
+    query += ` GROUP BY sp.id ORDER BY sp.created_at DESC LIMIT ${offset}, ${limitNum}`;
 
     const [rows] = await pool.execute(query, params);
     

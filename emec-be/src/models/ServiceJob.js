@@ -5,46 +5,51 @@ class ServiceJob {
   // Helper method to get the correct service package column name
   static async getServicePackageColumnName() {
     try {
-      // Check for service_package_id first (new column)
-      const [newCols] = await pool.execute(
+      // Get database name from connection config
+      const dbName = process.env.DB_NAME || 'emec_db';
+      
+      // Check both columns in a single query for better reliability
+      const [columns] = await pool.execute(
         `SELECT COLUMN_NAME FROM information_schema.COLUMNS 
-         WHERE TABLE_SCHEMA = DATABASE() 
+         WHERE TABLE_SCHEMA = ? 
          AND TABLE_NAME = 'service_jobs' 
-         AND COLUMN_NAME = 'service_package_id'
-         LIMIT 1`
+         AND COLUMN_NAME IN ('service_package_id', 'service_type_id')`,
+        [dbName]
       );
-      if (newCols.length > 0) {
+      
+      // Check for service_package_id first (new column - preferred)
+      const hasPackageId = columns.some(col => col.COLUMN_NAME === 'service_package_id');
+      if (hasPackageId) {
         return 'service_package_id';
       }
       
       // Check for service_type_id (old column)
-      const [oldCols] = await pool.execute(
-        `SELECT COLUMN_NAME FROM information_schema.COLUMNS 
-         WHERE TABLE_SCHEMA = DATABASE() 
-         AND TABLE_NAME = 'service_jobs' 
-         AND COLUMN_NAME = 'service_type_id'
-         LIMIT 1`
-      );
-      if (oldCols.length > 0) {
+      const hasTypeId = columns.some(col => col.COLUMN_NAME === 'service_type_id');
+      if (hasTypeId) {
         return 'service_type_id';
       }
     } catch (error) {
       console.warn('Could not check column name:', error.message);
     }
-    // Default to service_type_id since that's what likely exists
-    return 'service_type_id';
+    // Default to service_package_id since that's the newer standard
+    // If neither exists, this will cause an error that's easier to debug
+    return 'service_package_id';
   }
   
   // Helper to build service package join condition
   // Returns object with join clause and alias name
   static async buildServicePackageJoin() {
     try {
+      // Get database name from connection config
+      const dbName = process.env.DB_NAME || 'emec_db';
+      
       // Check which columns actually exist
       const [allColumns] = await pool.execute(
         `SELECT COLUMN_NAME FROM information_schema.COLUMNS 
-         WHERE TABLE_SCHEMA = DATABASE() 
+         WHERE TABLE_SCHEMA = ? 
          AND TABLE_NAME = 'service_jobs' 
-         AND COLUMN_NAME IN ('service_package_id', 'service_type_id')`
+         AND COLUMN_NAME IN ('service_package_id', 'service_type_id')`,
+        [dbName]
       );
       
       const hasPackageId = allColumns.some(col => col.COLUMN_NAME === 'service_package_id');
@@ -55,14 +60,16 @@ class ServiceJob {
       // Check which tables exist
       const [packageTables] = await pool.execute(
         `SELECT TABLE_NAME FROM information_schema.TABLES 
-         WHERE TABLE_SCHEMA = DATABASE() 
-         AND TABLE_NAME = 'service_packages'`
+         WHERE TABLE_SCHEMA = ? 
+         AND TABLE_NAME = 'service_packages'`,
+        [dbName]
       );
       
       const [typeTables] = await pool.execute(
         `SELECT TABLE_NAME FROM information_schema.TABLES 
-         WHERE TABLE_SCHEMA = DATABASE() 
-         AND TABLE_NAME = 'service_types'`
+         WHERE TABLE_SCHEMA = ? 
+         AND TABLE_NAME = 'service_types'`,
+        [dbName]
       );
       
       console.log('Service package tables check:', { hasPackageTable: packageTables.length > 0, hasTypeTable: typeTables.length > 0 });
@@ -101,11 +108,11 @@ class ServiceJob {
     const datePrefix = `${year}${month}${day}`; // YYMMDD format
     const prefix = 'SJ-';
     
-    // Get the last job number for today
+    // Get the last job number for today (including soft-deleted jobs)
+    // We need to check ALL jobs because UNIQUE constraint applies to all records
     const [rows] = await pool.execute(
       `SELECT job_number FROM service_jobs 
-       WHERE is_deleted = 0 
-       AND job_number LIKE ? 
+       WHERE job_number LIKE ? 
        ORDER BY job_number DESC LIMIT 1`,
       [`${prefix}${datePrefix}%`]
     );
@@ -262,6 +269,25 @@ class ServiceJob {
     );
     job.recommendations = recommendations;
     
+    // Get services (optional - table may not exist if migration hasn't been run)
+    try {
+      const [services] = await pool.execute(
+        `SELECT s.* FROM service_job_services sjs
+         JOIN services s ON sjs.service_id = s.id
+         WHERE sjs.service_job_id = ? AND s.is_deleted = 0
+         ORDER BY s.name ASC`,
+        [id]
+      );
+      job.services = services || [];
+    } catch (error) {
+      // If table doesn't exist yet, just set empty array
+      if (error.code === 'ER_NO_SUCH_TABLE' || error.message.includes("doesn't exist")) {
+        job.services = [];
+      } else {
+        throw error;
+      }
+    }
+
     // Get items/parts (optional - table may not exist if migration hasn't been run)
     try {
       const [items] = await pool.execute(
@@ -283,6 +309,29 @@ class ServiceJob {
       }
     }
     
+    // Calculate service package total price (sum of all services in the package)
+    if (job.service_package_id) {
+      try {
+        const [packageServices] = await pool.execute(
+          `SELECT COALESCE(SUM(s.price), 0) as total_price
+           FROM service_service_packages ssp
+           JOIN services s ON ssp.service_id = s.id
+           WHERE ssp.service_package_id = ? AND s.is_deleted = 0`,
+          [job.service_package_id]
+        );
+        job.service_package_price = parseFloat(packageServices[0]?.total_price || 0);
+      } catch (error) {
+        // If table doesn't exist yet, set price to 0
+        if (error.code === 'ER_NO_SUCH_TABLE' || error.message.includes("doesn't exist")) {
+          job.service_package_price = 0;
+        } else {
+          throw error;
+        }
+      }
+    } else {
+      job.service_package_price = 0;
+    }
+    
     return job;
   }
 
@@ -291,13 +340,16 @@ class ServiceJob {
     try {
       await connection.beginTransaction();
 
+      // Get the correct column name (service_package_id or service_type_id)
+      const columnName = await this.getServicePackageColumnName();
+
       // Generate job number
       const jobNumber = await this.generateJobNumber();
       
       // Create service job
       const jobId = generateUUID();
       await connection.execute(
-        `INSERT INTO service_jobs (id, job_number, vehicle_id, service_package_id, fuel_level, odometer_reading, remarks, status) 
+        `INSERT INTO service_jobs (id, job_number, vehicle_id, ${columnName}, fuel_level, odometer_reading, remarks, status) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           jobId,
@@ -332,6 +384,27 @@ class ServiceJob {
              VALUES (?, ?, ?)`,
             [recJobId, jobId, recommendationId]
           );
+        }
+      }
+
+      // Add services (optional - table may not exist if migration hasn't been run)
+      if (data.services && data.services.length > 0) {
+        try {
+          for (const serviceId of data.services) {
+            const serviceJobServiceId = generateUUID();
+            await connection.execute(
+              `INSERT INTO service_job_services (id, service_job_id, service_id) 
+               VALUES (?, ?, ?)`,
+              [serviceJobServiceId, jobId, serviceId]
+            );
+          }
+        } catch (error) {
+          // If table doesn't exist yet, just skip services
+          if (error.code === 'ER_NO_SUCH_TABLE' || error.message.includes("doesn't exist")) {
+            console.warn('service_job_services table does not exist yet. Services will not be saved. Please run migration 017.');
+          } else {
+            throw error;
+          }
         }
       }
 
@@ -382,9 +455,12 @@ class ServiceJob {
     try {
       await connection.beginTransaction();
 
+      // Get the correct column name (service_package_id or service_type_id)
+      const columnName = await this.getServicePackageColumnName();
+
       // Update service job
       await connection.execute(
-        `UPDATE service_jobs SET vehicle_id = ?, service_package_id = ?, fuel_level = ?, odometer_reading = ?, remarks = ?, status = ? 
+        `UPDATE service_jobs SET vehicle_id = ?, ${columnName} = ?, fuel_level = ?, odometer_reading = ?, remarks = ?, status = ? 
          WHERE id = ?`,
         [
           data.vehicle_id,
@@ -430,6 +506,36 @@ class ServiceJob {
              VALUES (?, ?, ?)`,
             [recJobId, id, recommendationId]
           );
+        }
+      }
+
+      // Delete existing services (optional - table may not exist if migration hasn't been run)
+      try {
+        await connection.execute(
+          `DELETE FROM service_job_services WHERE service_job_id = ?`,
+          [id]
+        );
+      } catch (error) {
+        if (error.code !== 'ER_NO_SUCH_TABLE' && !error.message.includes("doesn't exist")) {
+          throw error;
+        }
+      }
+
+      // Add new services
+      if (data.services && data.services.length > 0) {
+        try {
+          for (const serviceId of data.services) {
+            const serviceJobServiceId = generateUUID();
+            await connection.execute(
+              `INSERT INTO service_job_services (id, service_job_id, service_id) 
+               VALUES (?, ?, ?)`,
+              [serviceJobServiceId, id, serviceId]
+            );
+          }
+        } catch (error) {
+          if (error.code !== 'ER_NO_SUCH_TABLE' && !error.message.includes("doesn't exist")) {
+            throw error;
+          }
         }
       }
 
