@@ -34,7 +34,7 @@ class Stock {
 
   static async getBatchesByItemId(itemId) {
     const [rows] = await pool.execute(
-      `SELECT s.*, i.item_name 
+      `SELECT s.*, i.item_name, s.sale_price, s.purchase_price
        FROM stock s 
        LEFT JOIN items i ON s.item_id = i.id 
        WHERE s.item_id = ? AND s.available_quantity > 0 

@@ -94,6 +94,12 @@ class Purchase {
           ]
         );
 
+        // Get purchase price and sale price
+        // Purchase price is the unit_price from purchase
+        const purchasePrice = parseFloat(item.unit_price || 0);
+        // Sale price comes from item.sale_price if provided in purchase data
+        const salePrice = parseFloat(item.sale_price || 0);
+
         // Update or create stock
         const totalQty = parseFloat(item.quantity) + parseFloat(item.free_quantity || 0);
         const [existingStock] = await connection.execute(
@@ -103,16 +109,17 @@ class Purchase {
 
         if (existingStock.length > 0) {
           await connection.execute(
-            `UPDATE stock SET quantity = quantity + ?, available_quantity = available_quantity + ? 
+            `UPDATE stock SET quantity = quantity + ?, available_quantity = available_quantity + ?, 
+             purchase_price = ?, sale_price = ?
              WHERE item_id = ? AND batch_number = ?`,
-            [totalQty, totalQty, item.item_id, item.batch_number]
+            [totalQty, totalQty, purchasePrice, salePrice, item.item_id, item.batch_number]
           );
         } else {
           const stockId = generateUUID();
           await connection.execute(
-            `INSERT INTO stock (id, item_id, batch_number, quantity, available_quantity, purchase_bill_id) 
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [stockId, item.item_id, item.batch_number, totalQty, totalQty, purchaseBillId]
+            `INSERT INTO stock (id, item_id, batch_number, quantity, available_quantity, purchase_price, sale_price, purchase_bill_id) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [stockId, item.item_id, item.batch_number, totalQty, totalQty, purchasePrice, salePrice, purchaseBillId]
           );
         }
       }

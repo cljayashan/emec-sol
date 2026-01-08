@@ -10,6 +10,8 @@ export const serviceJobService = {
   getById: (id) => api.get(`/service-jobs/${id}`),
   create: (data) => api.post('/service-jobs', data),
   update: (id, data) => api.put(`/service-jobs/${id}`, data),
-  delete: (id) => api.delete(`/service-jobs/${id}`)
+  delete: (id) => api.delete(`/service-jobs/${id}`),
+  addItem: (serviceJobId, itemData) => api.post(`/service-jobs/${serviceJobId}/items`, itemData),
+  removeItem: (serviceJobId, itemId) => api.delete(`/service-jobs/${serviceJobId}/items/${itemId}`)
 };
 

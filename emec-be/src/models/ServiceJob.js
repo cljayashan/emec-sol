@@ -150,6 +150,27 @@ class ServiceJob {
     );
     job.recommendations = recommendations;
     
+    // Get items/parts (optional - table may not exist if migration hasn't been run)
+    try {
+      const [items] = await pool.execute(
+        `SELECT sji.*, i.item_name, i.barcode
+         FROM service_job_items sji
+         JOIN items i ON sji.item_id = i.id
+         WHERE sji.service_job_id = ? AND i.is_deleted = 0
+         ORDER BY sji.created_at ASC`,
+        [id]
+      );
+      job.items = items || [];
+    } catch (error) {
+      // If table doesn't exist yet, just set empty array
+      // This allows the system to work before migration is run
+      if (error.code === 'ER_NO_SUCH_TABLE' || error.message.includes("doesn't exist")) {
+        job.items = [];
+      } else {
+        throw error;
+      }
+    }
+    
     return job;
   }
 
@@ -199,6 +220,38 @@ class ServiceJob {
              VALUES (?, ?, ?)`,
             [recJobId, jobId, recommendationId]
           );
+        }
+      }
+
+      // Add items/parts (optional - table may not exist if migration hasn't been run)
+      if (data.items && data.items.length > 0) {
+        try {
+          for (const item of data.items) {
+            const itemId = generateUUID();
+            const totalPrice = (parseFloat(item.quantity || 0) * parseFloat(item.unit_price || 0)) + parseFloat(item.labour_charge || 0);
+            await connection.execute(
+              `INSERT INTO service_job_items (id, service_job_id, item_id, batch_number, quantity, unit_price, labour_charge, total_price) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                itemId,
+                jobId,
+                item.item_id,
+                item.batch_number || null,
+                item.quantity || 1,
+                item.unit_price || 0,
+                item.labour_charge || 0,
+                totalPrice
+              ]
+            );
+          }
+        } catch (error) {
+          // If table doesn't exist yet, just skip items
+          // This allows the system to work before migration is run
+          if (error.code === 'ER_NO_SUCH_TABLE' || error.message.includes("doesn't exist")) {
+            console.warn('service_job_items table does not exist yet. Items will not be saved. Please run migration 013.');
+          } else {
+            throw error;
+          }
         }
       }
 
@@ -268,6 +321,44 @@ class ServiceJob {
         }
       }
 
+      // Delete existing items (optional - table may not exist if migration hasn't been run)
+      try {
+        await connection.execute(
+          `DELETE FROM service_job_items WHERE service_job_id = ?`,
+          [id]
+        );
+
+        // Add new items/parts
+        if (data.items && data.items.length > 0) {
+          for (const item of data.items) {
+            const itemId = generateUUID();
+            const totalPrice = (parseFloat(item.quantity || 0) * parseFloat(item.unit_price || 0)) + parseFloat(item.labour_charge || 0);
+            await connection.execute(
+              `INSERT INTO service_job_items (id, service_job_id, item_id, batch_number, quantity, unit_price, labour_charge, total_price) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                itemId,
+                id,
+                item.item_id,
+                item.batch_number || null,
+                item.quantity || 1,
+                item.unit_price || 0,
+                item.labour_charge || 0,
+                totalPrice
+              ]
+            );
+          }
+        }
+      } catch (error) {
+        // If table doesn't exist yet, just skip items
+        // This allows the system to work before migration is run
+        if (error.code === 'ER_NO_SUCH_TABLE' || error.message.includes("doesn't exist")) {
+          console.warn('service_job_items table does not exist yet. Items will not be saved. Please run migration 013.');
+        } else {
+          throw error;
+        }
+      }
+
       await connection.commit();
       return this.findById(id);
     } catch (error) {
@@ -284,6 +375,76 @@ class ServiceJob {
       [id]
     );
     return true;
+  }
+
+  static async addItem(serviceJobId, itemData) {
+    const connection = await pool.getConnection();
+    try {
+      // Verify service job exists
+      const [jobs] = await connection.execute(
+        `SELECT id FROM service_jobs WHERE id = ? AND is_deleted = 0`,
+        [serviceJobId]
+      );
+      
+      if (jobs.length === 0) {
+        throw new Error('Service job not found');
+      }
+
+      const itemId = generateUUID();
+      const totalPrice = (parseFloat(itemData.quantity || 0) * parseFloat(itemData.unit_price || 0)) + parseFloat(itemData.labour_charge || 0);
+      
+      await connection.execute(
+        `INSERT INTO service_job_items (id, service_job_id, item_id, batch_number, quantity, unit_price, labour_charge, total_price) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          itemId,
+          serviceJobId,
+          itemData.item_id,
+          itemData.batch_number || null,
+          itemData.quantity || 1,
+          itemData.unit_price || 0,
+          itemData.labour_charge || 0,
+          totalPrice
+        ]
+      );
+
+      // Return the created item with item details
+      const [items] = await connection.execute(
+        `SELECT sji.*, i.item_name, i.barcode
+         FROM service_job_items sji
+         JOIN items i ON sji.item_id = i.id
+         WHERE sji.id = ?`,
+        [itemId]
+      );
+
+      return items[0];
+    } finally {
+      connection.release();
+    }
+  }
+
+  static async removeItem(serviceJobId, itemId) {
+    const connection = await pool.getConnection();
+    try {
+      // Verify the item belongs to the service job
+      const [items] = await connection.execute(
+        `SELECT id FROM service_job_items WHERE id = ? AND service_job_id = ?`,
+        [itemId, serviceJobId]
+      );
+      
+      if (items.length === 0) {
+        throw new Error('Item not found in this service job');
+      }
+
+      await connection.execute(
+        `DELETE FROM service_job_items WHERE id = ? AND service_job_id = ?`,
+        [itemId, serviceJobId]
+      );
+
+      return true;
+    } finally {
+      connection.release();
+    }
   }
 }
 

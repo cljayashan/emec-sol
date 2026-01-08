@@ -16,6 +16,8 @@ This folder contains database migration scripts that should be run sequentially 
 - **009_add_service_jobs.sql** - Adds service_jobs table and related tables for service job management
 - **010_add_customer_foreign_keys.sql** - Adds customer_id foreign keys to vehicles and quotations tables, replacing direct customer storage
 - **011_add_vehicle_foreign_keys.sql** - Ensures all foreign key constraints exist for customer_id, brand_id, and model_id in vehicles table (NOTE: Tables must be InnoDB - MyISAM doesn't support foreign keys. Migration will verify this)
+- **013_add_service_job_items.sql** - Adds service_job_items table for managing parts/items that need to be replaced during service jobs, with support for labour charges
+- **014_add_purchase_sale_price_to_stock.sql** - Adds purchase_price and sale_price columns to stock table for batchwise price tracking
 
 ## How to Run Migrations
 

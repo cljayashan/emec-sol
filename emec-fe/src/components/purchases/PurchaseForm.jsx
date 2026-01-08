@@ -24,7 +24,8 @@ const PurchaseForm = () => {
     batch_number: '',
     quantity: '',
     free_quantity: '',
-    unit_price: ''
+    unit_price: '',
+    sale_price: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -56,7 +57,8 @@ const PurchaseForm = () => {
     setItemForm({
       ...itemForm,
       item_id: item.id,
-      batch_number: `BATCH-${Date.now()}`
+      batch_number: `BATCH-${Date.now()}`,
+      sale_price: item.selling_price || ''
     });
   };
 
@@ -82,7 +84,8 @@ const PurchaseForm = () => {
       batch_number: '',
       quantity: '',
       free_quantity: '',
-      unit_price: ''
+      unit_price: '',
+      sale_price: ''
     });
     setSelectedItem(null);
   };
@@ -117,6 +120,7 @@ const PurchaseForm = () => {
           quantity: parseFloat(item.quantity),
           free_quantity: parseFloat(item.free_quantity || 0),
           unit_price: parseFloat(item.unit_price),
+          sale_price: parseFloat(item.sale_price || 0),
           total_price: parseFloat(item.total_price)
         }))
       };
@@ -177,7 +181,7 @@ const PurchaseForm = () => {
 
         <div style={{ marginTop: '30px', marginBottom: '20px' }}>
           <h3>Add Items</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
             <AutoComplete
               items={items}
               onSelect={handleItemSelect}
@@ -209,9 +213,17 @@ const PurchaseForm = () => {
             />
             <input
               type="number"
-              placeholder="Unit Price *"
+              placeholder="Purchase Price *"
               value={itemForm.unit_price}
               onChange={(e) => setItemForm({ ...itemForm, unit_price: e.target.value })}
+              step="0.01"
+              min="0"
+            />
+            <input
+              type="number"
+              placeholder="Sale Price"
+              value={itemForm.sale_price}
+              onChange={(e) => setItemForm({ ...itemForm, sale_price: e.target.value })}
               step="0.01"
               min="0"
             />
@@ -231,7 +243,8 @@ const PurchaseForm = () => {
                   <th>Batch</th>
                   <th>Quantity</th>
                   <th>Free Qty</th>
-                  <th>Unit Price</th>
+                  <th>Purchase Price</th>
+                  <th>Sale Price</th>
                   <th>Total</th>
                   <th>Action</th>
                 </tr>
@@ -246,6 +259,7 @@ const PurchaseForm = () => {
                       <td>{item.quantity}</td>
                       <td>{item.free_quantity || 0}</td>
                       <td>{parseFloat(item.unit_price).toFixed(2)}</td>
+                      <td>{parseFloat(item.sale_price || 0).toFixed(2)}</td>
                       <td>{parseFloat(item.total_price).toFixed(2)}</td>
                       <td>
                         <button
