@@ -1,0 +1,31 @@
+-- Migration: Rename service_types to service_packages
+-- Version: 016
+-- WARNING: This migration is superseded by migration 017
+-- DO NOT RUN THIS MIGRATION if you plan to run migration 017
+-- Migration 017 includes rollback of this migration and creates proper many-to-many relationships
+-- 
+-- If you need to run this migration standalone (not recommended), uncomment the commands below:
+-- 
+-- USE emec_db;
+-- 
+-- -- Rename table from service_types to service_packages
+-- ALTER TABLE service_types RENAME TO service_packages;
+-- 
+-- -- Rename column in service_jobs table
+-- ALTER TABLE service_jobs 
+-- CHANGE COLUMN service_type_id service_package_id VARCHAR(36);
+-- 
+-- -- Drop old foreign key constraint
+-- ALTER TABLE service_jobs 
+-- DROP FOREIGN KEY IF EXISTS fk_service_jobs_has_service_type;
+-- 
+-- -- Add new foreign key constraint with updated name
+-- ALTER TABLE service_jobs 
+-- ADD CONSTRAINT fk_service_jobs_has_service_package 
+-- FOREIGN KEY (service_package_id) REFERENCES service_packages(id) ON DELETE RESTRICT;
+-- 
+-- -- Drop old index
+-- DROP INDEX IF EXISTS idx_service_jobs_service_type ON service_jobs;
+-- 
+-- -- Create new index with updated name
+-- CREATE INDEX idx_service_jobs_service_package ON service_jobs(service_package_id);

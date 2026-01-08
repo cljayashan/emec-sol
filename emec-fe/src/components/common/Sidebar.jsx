@@ -26,7 +26,7 @@ const Sidebar = () => {
       children: [
         { path: '/suppliers', label: 'Suppliers' },
         { path: '/delivery-persons', label: 'Delivery Persons' },
-        { path: '/service-types', label: 'Service Types' },
+        { path: '/service-packages', label: 'Service Packages' },
         { path: '/services', label: 'Services' },
         { path: '/vehicle-defects', label: 'Vehicle Defects' },
         { path: '/pre-inspection-recommendations', label: 'Pre Inspection Recommendations' },

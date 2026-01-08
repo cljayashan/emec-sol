@@ -5,7 +5,7 @@ import { serviceJobService } from '../../services/serviceJobService';
 import { vehicleService } from '../../services/vehicleService';
 import { vehicleDefectService } from '../../services/vehicleDefectService';
 import { preInspectionRecommendationService } from '../../services/preInspectionRecommendationService';
-import { serviceTypeService } from '../../services/serviceTypeService';
+import { servicePackageService } from '../../services/servicePackageService';
 import { brandService } from '../../services/brandService';
 import { vehicleModelService } from '../../services/vehicleModelService';
 import { customerService } from '../../services/customerService';
@@ -21,7 +21,7 @@ const ServiceJobForm = () => {
   const isEdit = !!id;
   const { values, handleChange, setValue } = useForm({ 
     vehicle_id: '',
-    service_type_id: '',
+    service_package_id: '',
     fuel_level: '',
     odometer_reading: '',
     remarks: ''
@@ -30,8 +30,8 @@ const ServiceJobForm = () => {
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [showVehicleModal, setShowVehicleModal] = useState(false);
-  const [serviceTypes, setServiceTypes] = useState([]);
-  const [selectedServiceType, setSelectedServiceType] = useState(null);
+  const [servicePackages, setServicePackages] = useState([]);
+  const [selectedServicePackage, setSelectedServicePackage] = useState(null);
   const [ownerName, setOwnerName] = useState('');
   const [ownerMobile, setOwnerMobile] = useState('');
   const [vehicleDefects, setVehicleDefects] = useState([]);
@@ -88,7 +88,7 @@ const ServiceJobForm = () => {
     loadVehicles();
     loadVehicleDefects();
     loadPreInspectionRecommendations();
-    loadServiceTypes();
+    loadServicePackages();
     loadCustomers();
     if (isEdit && id) {
       loadServiceJob();
@@ -138,23 +138,23 @@ const ServiceJobForm = () => {
     }
   };
 
-  const loadServiceTypes = async () => {
+  const loadServicePackages = async () => {
     try {
-      const response = await serviceTypeService.getAll(1, 1000);
-      setServiceTypes(response.data.data.data || []);
+      const response = await servicePackageService.getAll(1, 1000);
+      setServicePackages(response.data.data.data || []);
     } catch (error) {
-      toast.error('Failed to load service types');
+      toast.error('Failed to load service packages');
     }
   };
 
   const loadServiceJob = async () => {
     try {
-      // Ensure vehicles, service types, and customers are loaded first
+      // Ensure vehicles, service packages, and customers are loaded first
       if (vehicles.length === 0) {
         await loadVehicles();
       }
-      if (serviceTypes.length === 0) {
-        await loadServiceTypes();
+      if (servicePackages.length === 0) {
+        await loadServicePackages();
       }
       if (customers.length === 0) {
         await loadCustomers();
@@ -163,7 +163,7 @@ const ServiceJobForm = () => {
       const response = await serviceJobService.getById(id);
       const job = response.data.data;
       setValue('vehicle_id', job.vehicle_id);
-      setValue('service_type_id', job.service_type_id || '');
+      setValue('service_package_id', job.service_package_id || '');
       setValue('fuel_level', job.fuel_level || '');
       setValue('odometer_reading', job.odometer_reading ? Math.floor(job.odometer_reading).toString() : '');
       setValue('remarks', job.remarks || '');
@@ -195,31 +195,17 @@ const ServiceJobForm = () => {
         }
       }
       
-      // Set selected service type
-      if (job.service_type_id && serviceTypes.length > 0) {
-        const serviceType = serviceTypes.find(st => st.id === job.service_type_id);
-        if (serviceType) {
-          setSelectedServiceType(serviceType);
+      // Set selected service package
+      if (job.service_package_id && servicePackages.length > 0) {
+        const servicePackage = servicePackages.find(sp => sp.id === job.service_package_id);
+        if (servicePackage) {
+          setSelectedServicePackage(servicePackage);
         }
-      } else if (job.service_type_id && job.service_type_name) {
-        // Fallback: create service type object from job data
-        setSelectedServiceType({
-          id: job.service_type_id,
-          name: job.service_type_name
-        });
-      }
-      
-      // Set selected service type
-      if (job.service_type_id && serviceTypes.length > 0) {
-        const serviceType = serviceTypes.find(st => st.id === job.service_type_id);
-        if (serviceType) {
-          setSelectedServiceType(serviceType);
-        }
-      } else if (job.service_type_id && job.service_type_name) {
-        // Fallback: create service type object from job data
-        setSelectedServiceType({
-          id: job.service_type_id,
-          name: job.service_type_name
+      } else if (job.service_package_id && job.service_package_name) {
+        // Fallback: create service package object from job data
+        setSelectedServicePackage({
+          id: job.service_package_id,
+          name: job.service_package_name
         });
       }
       
@@ -305,13 +291,13 @@ const ServiceJobForm = () => {
     }
   };
 
-  const handleServiceTypeSelect = (serviceType) => {
-    if (serviceType) {
-      setSelectedServiceType(serviceType);
-      setValue('service_type_id', serviceType.id);
+  const handleServicePackageSelect = (servicePackage) => {
+    if (servicePackage) {
+      setSelectedServicePackage(servicePackage);
+      setValue('service_package_id', servicePackage.id);
     } else {
-      setSelectedServiceType(null);
-      setValue('service_type_id', '');
+      setSelectedServicePackage(null);
+      setValue('service_package_id', '');
     }
   };
 
@@ -422,7 +408,7 @@ const ServiceJobForm = () => {
     try {
       const data = {
         vehicle_id: values.vehicle_id,
-        service_type_id: values.service_type_id || null,
+        service_package_id: values.service_package_id || null,
         fuel_level: values.fuel_level || null,
         odometer_reading: values.odometer_reading ? parseInt(values.odometer_reading, 10) : null,
         remarks: values.remarks || null,
@@ -448,12 +434,12 @@ const ServiceJobForm = () => {
         
         // Reset form for creating another job
         setValue('vehicle_id', '');
-        setValue('service_type_id', '');
+        setValue('service_package_id', '');
         setValue('fuel_level', '');
         setValue('odometer_reading', '');
         setValue('remarks', '');
         setSelectedVehicle(null);
-        setSelectedServiceType(null);
+        setSelectedServicePackage(null);
         setSelectedDefects([]);
         setSelectedRecommendations([]);
         setSelectedDefect(null);
@@ -562,21 +548,21 @@ const ServiceJobForm = () => {
         </div>
 
         <div className="form-group">
-          <label>Service Type</label>
+          <label>Service Package</label>
           <div style={{ position: 'relative' }}>
             <AutoComplete
-              items={serviceTypes}
-              onSelect={handleServiceTypeSelect}
-              placeholder="Search and select service type..."
+              items={servicePackages}
+              onSelect={handleServicePackageSelect}
+              placeholder="Search and select service package..."
               searchKey="name"
-              value={selectedServiceType ? selectedServiceType.name : ''}
+              value={selectedServicePackage ? selectedServicePackage.name : ''}
             />
-            {selectedServiceType && (
+            {selectedServicePackage && (
               <button
                 type="button"
                 onClick={() => {
-                  setSelectedServiceType(null);
-                  setValue('service_type_id', '');
+                  setSelectedServicePackage(null);
+                  setValue('service_package_id', '');
                 }}
                 style={{
                   position: 'absolute',
@@ -591,7 +577,7 @@ const ServiceJobForm = () => {
                   padding: '5px',
                   zIndex: 10
                 }}
-                title="Clear service type selection"
+                title="Clear service package selection"
               >
                 &times;
               </button>

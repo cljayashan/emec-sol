@@ -2,6 +2,96 @@ import pool from '../config/database.js';
 import { generateUUID } from '../utils/uuid.js';
 
 class ServiceJob {
+  // Helper method to get the correct service package column name
+  static async getServicePackageColumnName() {
+    try {
+      // Check for service_package_id first (new column)
+      const [newCols] = await pool.execute(
+        `SELECT COLUMN_NAME FROM information_schema.COLUMNS 
+         WHERE TABLE_SCHEMA = DATABASE() 
+         AND TABLE_NAME = 'service_jobs' 
+         AND COLUMN_NAME = 'service_package_id'
+         LIMIT 1`
+      );
+      if (newCols.length > 0) {
+        return 'service_package_id';
+      }
+      
+      // Check for service_type_id (old column)
+      const [oldCols] = await pool.execute(
+        `SELECT COLUMN_NAME FROM information_schema.COLUMNS 
+         WHERE TABLE_SCHEMA = DATABASE() 
+         AND TABLE_NAME = 'service_jobs' 
+         AND COLUMN_NAME = 'service_type_id'
+         LIMIT 1`
+      );
+      if (oldCols.length > 0) {
+        return 'service_type_id';
+      }
+    } catch (error) {
+      console.warn('Could not check column name:', error.message);
+    }
+    // Default to service_type_id since that's what likely exists
+    return 'service_type_id';
+  }
+  
+  // Helper to build service package join condition
+  // Returns object with join clause and alias name
+  static async buildServicePackageJoin() {
+    try {
+      // Check which columns actually exist
+      const [allColumns] = await pool.execute(
+        `SELECT COLUMN_NAME FROM information_schema.COLUMNS 
+         WHERE TABLE_SCHEMA = DATABASE() 
+         AND TABLE_NAME = 'service_jobs' 
+         AND COLUMN_NAME IN ('service_package_id', 'service_type_id')`
+      );
+      
+      const hasPackageId = allColumns.some(col => col.COLUMN_NAME === 'service_package_id');
+      const hasTypeId = allColumns.some(col => col.COLUMN_NAME === 'service_type_id');
+      
+      console.log('Service package columns check:', { hasPackageId, hasTypeId, columns: allColumns.map(c => c.COLUMN_NAME) });
+      
+      // Check which tables exist
+      const [packageTables] = await pool.execute(
+        `SELECT TABLE_NAME FROM information_schema.TABLES 
+         WHERE TABLE_SCHEMA = DATABASE() 
+         AND TABLE_NAME = 'service_packages'`
+      );
+      
+      const [typeTables] = await pool.execute(
+        `SELECT TABLE_NAME FROM information_schema.TABLES 
+         WHERE TABLE_SCHEMA = DATABASE() 
+         AND TABLE_NAME = 'service_types'`
+      );
+      
+      console.log('Service package tables check:', { hasPackageTable: packageTables.length > 0, hasTypeTable: typeTables.length > 0 });
+      
+      // If service_packages table exists, use it (preferred)
+      if (packageTables.length > 0) {
+        if (hasPackageId) {
+          console.log('Using service_packages table with service_package_id column');
+          return { join: `LEFT JOIN service_packages sp ON sj.service_package_id = sp.id`, alias: 'sp' };
+        } else if (hasTypeId) {
+          // Column is service_type_id but table is service_packages (migration in progress)
+          console.log('Using service_packages table with service_type_id column');
+          return { join: `LEFT JOIN service_packages sp ON sj.service_type_id = sp.id`, alias: 'sp' };
+        }
+      }
+      
+      // Fallback to service_types table if it exists
+      if (typeTables.length > 0 && hasTypeId) {
+        console.log('Using service_types table with service_type_id column');
+        return { join: `LEFT JOIN service_types st ON sj.service_type_id = st.id`, alias: 'st' };
+      }
+      
+      console.log('No valid service package join found');
+    } catch (error) {
+      console.warn('Error building service package join:', error.message);
+    }
+    // Return empty join if nothing works
+    return { join: '', alias: null };
+  }
   static async generateJobNumber() {
     // Get current date components
     const now = new Date();
@@ -43,6 +133,15 @@ class ServiceJob {
     const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 10));
     const offset = Math.max(0, (pageNum - 1) * limitNum);
     
+    // Build service package join
+    const { join: servicePackageJoin, alias: servicePackageAlias } = await this.buildServicePackageJoin();
+    
+    // Build the service package name field based on which alias exists
+    const servicePackageNameField = servicePackageAlias 
+      ? `${servicePackageAlias}.name as service_package_name`
+      : `NULL as service_package_name`;
+    
+    // Build query with the correct column name
     let query = `
       SELECT sj.*, 
              v.reg_no as vehicle_reg_no,
@@ -52,13 +151,13 @@ class ServiceJob {
              c.mobile2 as customer_mobile2,
              vb.name as vehicle_brand_name,
              vm.name as vehicle_model_name,
-             st.name as service_type_name
+             ${servicePackageNameField}
       FROM service_jobs sj
       LEFT JOIN vehicles v ON sj.vehicle_id = v.id
       LEFT JOIN customers c ON v.customer_id = c.id
       LEFT JOIN vehicle_brands vb ON v.brand_id = vb.id
       LEFT JOIN vehicle_models vm ON v.model_id = vm.id
-      LEFT JOIN service_types st ON sj.service_type_id = st.id
+      ${servicePackageJoin}
       WHERE sj.is_deleted = 0
     `;
     const params = [];
@@ -103,8 +202,20 @@ class ServiceJob {
   }
 
   static async findById(id) {
-    const [rows] = await pool.execute(
-      `       SELECT sj.*, 
+    // Build service package join
+    const { join: servicePackageJoin, alias: servicePackageAlias } = await this.buildServicePackageJoin();
+    
+    // Build the service package fields based on which alias exists
+    const servicePackageIdField = servicePackageAlias 
+      ? `${servicePackageAlias}.id as service_package_id`
+      : `NULL as service_package_id`;
+    const servicePackageNameField = servicePackageAlias 
+      ? `${servicePackageAlias}.name as service_package_name`
+      : `NULL as service_package_name`;
+    
+    // Build query with the correct column name
+    const query = `
+       SELECT sj.*, 
               v.id as vehicle_id,
               v.reg_no as vehicle_reg_no,
               c.full_name as vehicle_customer,
@@ -114,17 +225,18 @@ class ServiceJob {
               v.vehicle_type,
               vb.name as vehicle_brand_name,
               vm.name as vehicle_model_name,
-              st.id as service_type_id,
-              st.name as service_type_name
+              ${servicePackageIdField},
+              ${servicePackageNameField}
        FROM service_jobs sj
        LEFT JOIN vehicles v ON sj.vehicle_id = v.id
        LEFT JOIN customers c ON v.customer_id = c.id
        LEFT JOIN vehicle_brands vb ON v.brand_id = vb.id
        LEFT JOIN vehicle_models vm ON v.model_id = vm.id
-       LEFT JOIN service_types st ON sj.service_type_id = st.id
-       WHERE sj.id = ? AND sj.is_deleted = 0`,
-      [id]
-    );
+       ${servicePackageJoin}
+       WHERE sj.id = ? AND sj.is_deleted = 0
+    `;
+    
+    const [rows] = await pool.execute(query, [id]);
     
     if (rows.length === 0) {
       return null;
@@ -185,13 +297,13 @@ class ServiceJob {
       // Create service job
       const jobId = generateUUID();
       await connection.execute(
-        `INSERT INTO service_jobs (id, job_number, vehicle_id, service_type_id, fuel_level, odometer_reading, remarks, status) 
+        `INSERT INTO service_jobs (id, job_number, vehicle_id, service_package_id, fuel_level, odometer_reading, remarks, status) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           jobId,
           jobNumber,
           data.vehicle_id,
-          data.service_type_id || null,
+          data.service_package_id || null,
           data.fuel_level || null,
           data.odometer_reading || null,
           data.remarks || null,
@@ -272,11 +384,11 @@ class ServiceJob {
 
       // Update service job
       await connection.execute(
-        `UPDATE service_jobs SET vehicle_id = ?, service_type_id = ?, fuel_level = ?, odometer_reading = ?, remarks = ?, status = ? 
+        `UPDATE service_jobs SET vehicle_id = ?, service_package_id = ?, fuel_level = ?, odometer_reading = ?, remarks = ?, status = ? 
          WHERE id = ?`,
         [
           data.vehicle_id,
-          data.service_type_id || null,
+          data.service_package_id || null,
           data.fuel_level || null,
           data.odometer_reading || null,
           data.remarks || null,

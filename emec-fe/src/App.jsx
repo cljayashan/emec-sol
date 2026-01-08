@@ -14,9 +14,9 @@ import CustomerView from './components/customers/CustomerView';
 import DeliveryPersonList from './components/deliveryPersons/DeliveryPersonList';
 import DeliveryPersonForm from './components/deliveryPersons/DeliveryPersonForm';
 import DeliveryPersonView from './components/deliveryPersons/DeliveryPersonView';
-import ServiceTypeList from './components/serviceTypes/ServiceTypeList';
-import ServiceTypeForm from './components/serviceTypes/ServiceTypeForm';
-import ServiceTypeView from './components/serviceTypes/ServiceTypeView';
+import ServicePackageList from './components/servicePackages/ServicePackageList';
+import ServicePackageForm from './components/servicePackages/ServicePackageForm';
+import ServicePackageView from './components/servicePackages/ServicePackageView';
 import VehicleDefectList from './components/vehicleDefects/VehicleDefectList';
 import VehicleDefectForm from './components/vehicleDefects/VehicleDefectForm';
 import VehicleDefectView from './components/vehicleDefects/VehicleDefectView';
@@ -92,10 +92,10 @@ function App() {
                   <Route path="/delivery-persons/:id/edit" element={<DeliveryPersonForm />} />
                   <Route path="/delivery-persons/:id/view" element={<DeliveryPersonView />} />
                   
-                  <Route path="/service-types" element={<ServiceTypeList />} />
-                  <Route path="/service-types/new" element={<ServiceTypeForm />} />
-                  <Route path="/service-types/:id/edit" element={<ServiceTypeForm />} />
-                  <Route path="/service-types/:id/view" element={<ServiceTypeView />} />
+                  <Route path="/service-packages" element={<ServicePackageList />} />
+                  <Route path="/service-packages/new" element={<ServicePackageForm />} />
+                  <Route path="/service-packages/:id/edit" element={<ServicePackageForm />} />
+                  <Route path="/service-packages/:id/view" element={<ServicePackageView />} />
                   
                   <Route path="/vehicle-defects" element={<VehicleDefectList />} />
                   <Route path="/vehicle-defects/new" element={<VehicleDefectForm />} />
