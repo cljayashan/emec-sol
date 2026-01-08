@@ -71,18 +71,42 @@ const CustomerForm = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Validate required fields
+      if (!values.full_name || !values.full_name.trim()) {
+        toast.error('Full name is required');
+        setLoading(false);
+        return;
+      }
+
+      // Clean data - convert empty strings to undefined for optional fields
+      const data = {
+        full_name: values.full_name.trim(),
+        name_with_initials: values.name_with_initials && values.name_with_initials.trim() ? values.name_with_initials.trim() : undefined,
+        nic: values.nic && values.nic.trim() ? values.nic.trim() : undefined,
+        mobile1: values.mobile1 && values.mobile1.trim() ? values.mobile1.trim() : undefined,
+        mobile2: values.mobile2 && values.mobile2.trim() ? values.mobile2.trim() : undefined,
+        address: values.address && values.address.trim() ? values.address.trim() : undefined,
+        email_address: values.email_address && values.email_address.trim() ? values.email_address.trim() : undefined
+      };
+
       if (isEdit) {
-        await customerService.update(id, values);
+        await customerService.update(id, data);
         toast.success('Customer updated successfully');
         navigate(returnTo || '/customers');
       } else {
-        await customerService.create(values);
+        await customerService.create(data);
         toast.success('Customer created successfully');
         // Navigate back to the return path if provided, otherwise go to customers list
         navigate(returnTo || '/customers');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Operation failed');
+      // Handle validation errors
+      if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+        const errorMessages = error.response.data.errors.map(err => err.msg || err.message).join(', ');
+        toast.error(errorMessages || 'Validation failed');
+      } else {
+        toast.error(error.response?.data?.message || error.response?.data?.error || 'Operation failed');
+      }
     } finally {
       setLoading(false);
     }

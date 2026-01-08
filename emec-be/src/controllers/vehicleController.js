@@ -51,6 +51,10 @@ export const deleteVehicle = async (req, res, next) => {
     await Vehicle.delete(req.params.id);
     sendSuccess(res, null, 'Vehicle deleted successfully');
   } catch (error) {
+    console.error('Error deleting vehicle:', error);
+    if (error.message === 'Vehicle not found or already deleted') {
+      return sendError(res, error.message, 404);
+    }
     next(error);
   }
 };

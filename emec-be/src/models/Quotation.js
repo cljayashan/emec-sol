@@ -9,7 +9,17 @@ class Quotation {
     
     // MySQL2 requires LIMIT values to be numbers, not placeholders
     const [rows] = await pool.execute(
-      `SELECT * FROM quotations WHERE is_deleted = 0 ORDER BY created_at DESC LIMIT ${offset}, ${limitNum}`
+      `SELECT q.*,
+              c.full_name as customer_name,
+              c.name_with_initials as customer_name_with_initials,
+              c.nic as customer_nic,
+              c.mobile1 as customer_mobile1,
+              c.mobile2 as customer_mobile2,
+              c.address as customer_address,
+              c.email_address as customer_email
+       FROM quotations q
+       LEFT JOIN customers c ON q.customer_id = c.id
+       WHERE q.is_deleted = 0 ORDER BY q.created_at DESC LIMIT ${offset}, ${limitNum}`
     );
     const [count] = await pool.execute(
       `SELECT COUNT(*) as total FROM quotations WHERE is_deleted = 0`
@@ -19,7 +29,17 @@ class Quotation {
 
   static async findById(id) {
     const [quotations] = await pool.execute(
-      `SELECT * FROM quotations WHERE id = ? AND is_deleted = 0`,
+      `SELECT q.*,
+              c.full_name as customer_name,
+              c.name_with_initials as customer_name_with_initials,
+              c.nic as customer_nic,
+              c.mobile1 as customer_mobile1,
+              c.mobile2 as customer_mobile2,
+              c.address as customer_address,
+              c.email_address as customer_email
+       FROM quotations q
+       LEFT JOIN customers c ON q.customer_id = c.id
+       WHERE q.id = ? AND q.is_deleted = 0`,
       [id]
     );
 
@@ -47,14 +67,13 @@ class Quotation {
       // Create quotation
       const quotationId = generateUUID();
       await connection.execute(
-        `INSERT INTO quotations (id, quotation_number, quotation_date, customer_name, customer_contact, subtotal, labour_charge, discount, total_amount) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO quotations (id, quotation_number, quotation_date, customer_id, subtotal, labour_charge, discount, total_amount) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           quotationId,
           data.quotation_number,
           data.quotation_date,
-          data.customer_name || null,
-          data.customer_contact || null,
+          data.customer_id || null,
           data.subtotal,
           data.labour_charge || 0,
           data.discount || 0,
@@ -97,14 +116,13 @@ class Quotation {
 
       // Update quotation
       await connection.execute(
-        `UPDATE quotations SET quotation_number = ?, quotation_date = ?, customer_name = ?, customer_contact = ?, 
+        `UPDATE quotations SET quotation_number = ?, quotation_date = ?, customer_id = ?, 
          subtotal = ?, labour_charge = ?, discount = ?, total_amount = ?, status = ? 
          WHERE id = ?`,
         [
           data.quotation_number,
           data.quotation_date,
-          data.customer_name || null,
-          data.customer_contact || null,
+          data.customer_id || null,
           data.subtotal,
           data.labour_charge || 0,
           data.discount || 0,

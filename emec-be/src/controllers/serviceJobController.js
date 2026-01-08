@@ -6,7 +6,8 @@ export const getAllServiceJobs = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || '';
-    const result = await ServiceJob.findAll(page, limit, search);
+    const date = req.query.date || null;
+    const result = await ServiceJob.findAll(page, limit, search, date);
     sendSuccess(res, result, 'Service jobs retrieved successfully');
   } catch (error) {
     console.error('Error in getAllServiceJobs:', error);

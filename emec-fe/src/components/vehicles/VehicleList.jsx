@@ -53,24 +53,35 @@ const VehicleList = () => {
     } else if (action === 'edit') {
       navigate(`/vehicles/${row.id}/edit`);
     } else if (action === 'delete') {
-      setDeleteId(row.id);
-      confirm('Are you sure you want to delete this vehicle?', handleDelete);
+      const vehicleId = row.id;
+      if (!vehicleId) {
+        toast.error('Invalid vehicle ID');
+        return;
+      }
+      setDeleteId(vehicleId);
+      confirm('Are you sure you want to delete this vehicle?', () => handleDelete(vehicleId));
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (id) => {
+    if (!id) {
+      toast.error('Vehicle ID is required');
+      return;
+    }
     try {
-      await vehicleService.delete(deleteId);
+      await vehicleService.delete(id);
       toast.success('Vehicle deleted successfully');
+      setDeleteId(null);
       loadVehicles();
     } catch (error) {
-      toast.error('Failed to delete vehicle');
+      toast.error(error.response?.data?.message || 'Failed to delete vehicle');
+      setDeleteId(null);
     }
   };
 
   const columns = [
     { key: 'reg_no', label: 'Registration No' },
-    { key: 'customer', label: 'Customer' },
+    { key: 'customer_name', label: 'Customer' },
     { key: 'brand_name', label: 'Brand' },
     { key: 'model_name', label: 'Model' },
     { key: 'vehicle_type', label: 'Vehicle Type' }

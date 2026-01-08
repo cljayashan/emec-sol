@@ -42,7 +42,7 @@ const VehicleView = () => {
           <strong>Registration Number:</strong> {vehicle.reg_no}
         </div>
         <div>
-          <strong>Customer:</strong> {vehicle.customer}
+          <strong>Customer:</strong> {vehicle.customer_name || 'N/A'}
         </div>
         <div>
           <strong>Vehicle Type:</strong> {vehicle.vehicle_type || 'N/A'}

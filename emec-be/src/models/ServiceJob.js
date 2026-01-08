@@ -38,7 +38,7 @@ class ServiceJob {
     return `${prefix}${datePrefix}${String(nextNumber).padStart(3, '0')}`;
   }
 
-  static async findAll(page = 1, limit = 10, search = '') {
+  static async findAll(page = 1, limit = 10, search = '', date = null) {
     const pageNum = Math.max(1, parseInt(page) || 1);
     const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 10));
     const offset = Math.max(0, (pageNum - 1) * limitNum);
@@ -46,12 +46,16 @@ class ServiceJob {
     let query = `
       SELECT sj.*, 
              v.reg_no as vehicle_reg_no,
-             v.customer as vehicle_customer,
+             c.full_name as vehicle_customer,
+             c.id as customer_id,
+             c.mobile1 as customer_mobile1,
+             c.mobile2 as customer_mobile2,
              vb.name as vehicle_brand_name,
              vm.name as vehicle_model_name,
              st.name as service_type_name
       FROM service_jobs sj
       LEFT JOIN vehicles v ON sj.vehicle_id = v.id
+      LEFT JOIN customers c ON v.customer_id = c.id
       LEFT JOIN vehicle_brands vb ON v.brand_id = vb.id
       LEFT JOIN vehicle_models vm ON v.model_id = vm.id
       LEFT JOIN service_types st ON sj.service_type_id = st.id
@@ -60,9 +64,14 @@ class ServiceJob {
     const params = [];
 
     if (search) {
-      query += ` AND (sj.job_number LIKE ? OR v.reg_no LIKE ? OR v.customer LIKE ?)`;
+      query += ` AND (sj.job_number LIKE ? OR v.reg_no LIKE ? OR c.full_name LIKE ?)`;
       const searchPattern = `%${search}%`;
       params.push(searchPattern, searchPattern, searchPattern);
+    }
+
+    if (date) {
+      query += ` AND DATE(sj.created_at) = ?`;
+      params.push(date);
     }
 
     query += ` ORDER BY sj.created_at DESC LIMIT ${offset}, ${limitNum}`;
@@ -73,14 +82,20 @@ class ServiceJob {
     let countQuery = `
       SELECT COUNT(*) as total FROM service_jobs sj
       LEFT JOIN vehicles v ON sj.vehicle_id = v.id
+      LEFT JOIN customers c ON v.customer_id = c.id
       WHERE sj.is_deleted = 0
     `;
     const countParams = [];
     
     if (search) {
-      countQuery += ` AND (sj.job_number LIKE ? OR v.reg_no LIKE ? OR v.customer LIKE ?)`;
+      countQuery += ` AND (sj.job_number LIKE ? OR v.reg_no LIKE ? OR c.full_name LIKE ?)`;
       const searchPattern = `%${search}%`;
       countParams.push(searchPattern, searchPattern, searchPattern);
+    }
+
+    if (date) {
+      countQuery += ` AND DATE(sj.created_at) = ?`;
+      countParams.push(date);
     }
     
     const [count] = await pool.execute(countQuery, countParams);
@@ -92,19 +107,21 @@ class ServiceJob {
       `       SELECT sj.*, 
               v.id as vehicle_id,
               v.reg_no as vehicle_reg_no,
-              v.customer as vehicle_customer,
+              c.full_name as vehicle_customer,
+              c.id as customer_id,
+              c.mobile1 as owner_mobile,
+              c.mobile2 as customer_mobile2,
               v.vehicle_type,
               vb.name as vehicle_brand_name,
               vm.name as vehicle_model_name,
               st.id as service_type_id,
-              st.name as service_type_name,
-              c.mobile1 as owner_mobile
+              st.name as service_type_name
        FROM service_jobs sj
        LEFT JOIN vehicles v ON sj.vehicle_id = v.id
+       LEFT JOIN customers c ON v.customer_id = c.id
        LEFT JOIN vehicle_brands vb ON v.brand_id = vb.id
        LEFT JOIN vehicle_models vm ON v.model_id = vm.id
        LEFT JOIN service_types st ON sj.service_type_id = st.id
-       LEFT JOIN customers c ON v.customer = c.full_name AND c.is_deleted = 0
        WHERE sj.id = ? AND sj.is_deleted = 0`,
       [id]
     );
