@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 'name', value = '', renderItem }) => {
+const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 'name', value = '', renderItem, searchOnlyKey = false }) => {
   const [searchTerm, setSearchTerm] = useState(value);
   const [filteredItems, setFilteredItems] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -16,13 +16,23 @@ const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 
       if (searchTerm) {
         const searchTermStr = String(searchTerm).toLowerCase();
         const filtered = items.filter((item) => {
+          // If searchOnlyKey is true, only search in searchKey field
+          if (searchOnlyKey) {
+            const itemValue = item[searchKey];
+            return itemValue != null && String(itemValue).toLowerCase().includes(searchTermStr);
+          }
           // If renderItem is provided, search in the rendered text, otherwise use searchKey
           if (renderItem) {
             const displayText = String(renderItem(item)).toLowerCase();
             return displayText.includes(searchTermStr);
           }
+          // Search in multiple fields: searchKey, brand, barcode
           const itemValue = item[searchKey];
-          return itemValue != null && String(itemValue).toLowerCase().includes(searchTermStr);
+          const brandValue = item.brand || '';
+          const barcodeValue = item.barcode || '';
+          return (itemValue != null && String(itemValue).toLowerCase().includes(searchTermStr)) ||
+                 (brandValue && String(brandValue).toLowerCase().includes(searchTermStr)) ||
+                 (barcodeValue && String(barcodeValue).toLowerCase().includes(searchTermStr));
         });
         setFilteredItems(filtered);
       } else {
@@ -66,12 +76,22 @@ const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 
       if (searchTerm) {
         const searchTermStr = String(searchTerm).toLowerCase();
         const filtered = items.filter((item) => {
+          // If searchOnlyKey is true, only search in searchKey field
+          if (searchOnlyKey) {
+            const itemValue = item[searchKey];
+            return itemValue != null && String(itemValue).toLowerCase().includes(searchTermStr);
+          }
           if (renderItem) {
             const displayText = String(renderItem(item)).toLowerCase();
             return displayText.includes(searchTermStr);
           }
+          // Search in multiple fields: searchKey, brand, barcode
           const itemValue = item[searchKey];
-          return itemValue != null && String(itemValue).toLowerCase().includes(searchTermStr);
+          const brandValue = item.brand || '';
+          const barcodeValue = item.barcode || '';
+          return (itemValue != null && String(itemValue).toLowerCase().includes(searchTermStr)) ||
+                 (brandValue && String(brandValue).toLowerCase().includes(searchTermStr)) ||
+                 (barcodeValue && String(barcodeValue).toLowerCase().includes(searchTermStr));
         });
         setFilteredItems(filtered);
       } else {
@@ -89,8 +109,14 @@ const AutoComplete = ({ items, onSelect, placeholder = 'Search...', searchKey = 
         onChange={handleInputChange}
         onFocus={handleInputFocus}
         placeholder={placeholder}
-        className="form-group input"
-        style={{ width: '100%' }}
+        style={{ 
+          width: '100%', 
+          padding: '8px', 
+          border: '1px solid #ddd', 
+          borderRadius: '4px',
+          fontSize: '14px',
+          boxSizing: 'border-box'
+        }}
       />
       {showDropdown && filteredItems.length > 0 && (
         <div

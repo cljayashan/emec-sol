@@ -59,3 +59,24 @@ export const deleteServiceJob = async (req, res, next) => {
   }
 };
 
+export const addItemToServiceJob = async (req, res, next) => {
+  try {
+    const { serviceJobId } = req.params;
+    const item = await ServiceJob.addItem(serviceJobId, req.body);
+    sendSuccess(res, item, 'Item added to service job successfully', 201);
+  } catch (error) {
+    console.error('Error in addItemToServiceJob:', error);
+    next(error);
+  }
+};
+
+export const removeItemFromServiceJob = async (req, res, next) => {
+  try {
+    const { serviceJobId, itemId } = req.params;
+    await ServiceJob.removeItem(serviceJobId, itemId);
+    sendSuccess(res, null, 'Item removed from service job successfully');
+  } catch (error) {
+    console.error('Error in removeItemFromServiceJob:', error);
+    next(error);
+  }
+};

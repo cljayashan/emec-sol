@@ -12,6 +12,7 @@ import { customerService } from '../../services/customerService';
 import { useForm } from '../../hooks/useForm';
 import AutoComplete from '../common/AutoComplete';
 import Modal from '../common/Modal';
+import ItemSelectionModal from '../common/ItemSelectionModal';
 import { VEHICLE_TYPES, VEHICLE_REGISTRATION_PREFIXES } from '../../utils/constants';
 
 const ServiceJobForm = () => {
@@ -63,6 +64,10 @@ const ServiceJobForm = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [regPrefix, setRegPrefix] = useState('');
   const [regNumber, setRegNumber] = useState('');
+
+  // Items/Parts management state
+  const [serviceJobItems, setServiceJobItems] = useState([]);
+  const [showItemsModal, setShowItemsModal] = useState(false);
 
   const fuelLevels = ['Empty', '1/4', '1/2', '3/4', 'Full'];
 
@@ -227,6 +232,11 @@ const ServiceJobForm = () => {
       if (job.recommendations) {
         setSelectedRecommendations(job.recommendations.map(r => r.id));
       }
+      
+      // Load items
+      if (job.items) {
+        setServiceJobItems(job.items || []);
+      }
     } catch (error) {
       toast.error('Failed to load service job');
       navigate('/service-jobs');
@@ -327,6 +337,28 @@ const ServiceJobForm = () => {
     setSelectedRecommendations(prev => prev.filter(id => id !== recommendationId));
   };
 
+  const handleAddItem = (item) => {
+    // Add single item to the list
+    setServiceJobItems(prev => [...prev, item]);
+    toast.success('Item added successfully');
+  };
+
+  const handleRemoveItem = async (itemId) => {
+    if (isEdit && id) {
+      // Remove item from existing service job
+      try {
+        await serviceJobService.removeItem(id, itemId);
+        setServiceJobItems(prev => prev.filter(item => item.id !== itemId));
+        toast.success('Item removed successfully');
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to remove item');
+      }
+    } else {
+      // Remove item from local state
+      setServiceJobItems(prev => prev.filter(item => item.id !== itemId));
+    }
+  };
+
   const handleVehicleFormSubmit = async (e) => {
     e.preventDefault();
     setVehicleFormLoading(true);
@@ -396,6 +428,13 @@ const ServiceJobForm = () => {
         remarks: values.remarks || null,
         defects: selectedDefects,
         recommendations: selectedRecommendations,
+        items: serviceJobItems.map(item => ({
+          item_id: item.item_id,
+          batch_number: item.batch_number || null,
+          quantity: parseFloat(item.quantity),
+          unit_price: parseFloat(item.unit_price),
+          labour_charge: parseFloat(item.labour_charge || 0)
+        })),
         status: 'pending'
       };
 
@@ -421,6 +460,8 @@ const ServiceJobForm = () => {
         setSelectedRecommendation(null);
         setDefectListSearch('');
         setRecommendationListSearch('');
+        setServiceJobItems([]);
+        setServiceJobItems([]);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Operation failed');
@@ -832,6 +873,63 @@ const ServiceJobForm = () => {
           </div>
         </div>
 
+        {/* Items/Parts Section */}
+        <div className="form-group">
+          <label>Parts/Items to Replace</label>
+          <div style={{ marginBottom: '15px' }}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setShowItemsModal(true)}
+            >
+              Add Item
+            </button>
+          </div>
+          
+          {serviceJobItems.length > 0 && (
+            <div style={{ marginTop: '20px' }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Batch</th>
+                    <th>Qty</th>
+                    <th>Unit Price</th>
+                    <th>Labour</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {serviceJobItems.map((item) => {
+                    const totalPrice = (parseFloat(item.quantity || 0) * parseFloat(item.unit_price || 0)) + parseFloat(item.labour_charge || 0);
+                    return (
+                      <tr key={item.id}>
+                        <td>{item.item_name || 'N/A'}</td>
+                        <td>{item.batch_number || '-'}</td>
+                        <td>{parseFloat(item.quantity || 0).toFixed(2)}</td>
+                        <td>{parseFloat(item.unit_price || 0).toFixed(2)}</td>
+                        <td>{parseFloat(item.labour_charge || 0).toFixed(2)}</td>
+                        <td>{totalPrice.toFixed(2)}</td>
+                        <td>
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={() => handleRemoveItem(item.id)}
+                            style={{ fontSize: '12px', padding: '4px 8px' }}
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
         <div className="form-group">
           <label>Remarks</label>
           <textarea
@@ -852,6 +950,13 @@ const ServiceJobForm = () => {
           </button>
         </div>
       </form>
+
+      {/* Items Selection Modal */}
+      <ItemSelectionModal
+        isOpen={showItemsModal}
+        onClose={() => setShowItemsModal(false)}
+        onAdd={handleAddItem}
+      />
 
       {/* Vehicle Registration Modal */}
       <Modal

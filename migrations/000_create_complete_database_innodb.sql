@@ -293,6 +293,8 @@ CREATE TABLE stock (
     batch_number VARCHAR(100),
     quantity DECIMAL(10,2),
     available_quantity DECIMAL(10,2),
+    purchase_price DECIMAL(10,2) DEFAULT 0 COMMENT 'Purchase price per unit for this batch',
+    sale_price DECIMAL(10,2) DEFAULT 0 COMMENT 'Sale price per unit for this batch',
     purchase_bill_id VARCHAR(36),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -35,26 +35,19 @@ export const MEASUREMENT_UNITS = [
   'Dozen',
   'Gram',
   'Kilogram',
-  'Pound',
-  'Ounce',
   'Millimeter',
   'Centimeter',
   'Meter',
   'Inch',
   'Foot',
-  'Yard',
   'Milliliter',
   'Liter',
-  'Fluid ounce',
-  'Gallon',
-  'Cubic centimeter',
-  'Square meter',
-  'Square foot',
   'Serving',
   'Portion',
   'Bundle',
   'Set',
-  'Case'
+  'Case',
+  'Can'
 ];
 
 export const VEHICLE_TYPES = [

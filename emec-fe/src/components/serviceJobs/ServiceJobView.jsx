@@ -38,28 +38,32 @@ const ServiceJobView = () => {
       </div>
       
       <div style={{ display: 'grid', gap: '15px' }}>
-        <div>
-          <strong>Job Number:</strong> {serviceJob.job_number}
-        </div>
-        <div>
-          <strong>Vehicle Number:</strong> {serviceJob.vehicle_reg_no || 'N/A'}
-        </div>
-        <div>
-          <strong>Owner Name:</strong> {serviceJob.vehicle_customer || 'N/A'}
-        </div>
-        <div>
-          <strong>Owner Mobile:</strong> {serviceJob.owner_mobile || 'N/A'}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '15px' }}>
+          <div>
+            <strong>Job Number:</strong> {serviceJob.job_number}
+          </div>
+          <div>
+            <strong>Vehicle Number:</strong> {serviceJob.vehicle_reg_no || 'N/A'}
+          </div>
+          <div>
+            <strong>Odometer Reading:</strong> {serviceJob.odometer_reading ? Math.floor(serviceJob.odometer_reading) : 'N/A'}
+          </div>
+          <div>
+            <strong>Fuel Level:</strong> {serviceJob.fuel_level || 'N/A'}
+          </div>
         </div>
         {serviceJob.vehicle_brand_name && (
           <div>
             <strong>Vehicle Details:</strong> {serviceJob.vehicle_brand_name} {serviceJob.vehicle_model_name || ''}
           </div>
         )}
-        <div>
-          <strong>Fuel Level:</strong> {serviceJob.fuel_level || 'N/A'}
-        </div>
-        <div>
-          <strong>Odometer Reading:</strong> {serviceJob.odometer_reading ? Math.floor(serviceJob.odometer_reading) : 'N/A'}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '15px' }}>
+          <div>
+            <strong>Owner Name:</strong> {serviceJob.vehicle_customer || 'N/A'}
+          </div>
+          <div>
+            <strong>Owner Mobile:</strong> {serviceJob.owner_mobile || 'N/A'}
+          </div>
         </div>
         <div>
           <strong>Status:</strong> <span style={{ 
@@ -98,6 +102,50 @@ const ServiceJobView = () => {
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+        
+        {serviceJob.items && serviceJob.items.length > 0 && (
+          <div>
+            <strong>Parts/Items:</strong>
+            <table className="table" style={{ marginTop: '10px' }}>
+              <thead>
+                <tr>
+                  <th>Item Name</th>
+                  <th>Batch</th>
+                  <th>Quantity</th>
+                  <th>Unit Price</th>
+                  <th>Labour Charge</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {serviceJob.items.map((item) => {
+                  const totalPrice = (parseFloat(item.quantity || 0) * parseFloat(item.unit_price || 0)) + parseFloat(item.labour_charge || 0);
+                  return (
+                    <tr key={item.id}>
+                      <td>{item.item_name || 'N/A'}</td>
+                      <td>{item.batch_number || '-'}</td>
+                      <td>{parseFloat(item.quantity || 0).toFixed(2)}</td>
+                      <td>{parseFloat(item.unit_price || 0).toFixed(2)}</td>
+                      <td>{parseFloat(item.labour_charge || 0).toFixed(2)}</td>
+                      <td>{totalPrice.toFixed(2)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr style={{ fontWeight: 'bold', backgroundColor: '#f9f9f9' }}>
+                  <td colSpan="5" style={{ textAlign: 'right' }}>Grand Total:</td>
+                  <td>
+                    {serviceJob.items.reduce((sum, item) => {
+                      const totalPrice = (parseFloat(item.quantity || 0) * parseFloat(item.unit_price || 0)) + parseFloat(item.labour_charge || 0);
+                      return sum + totalPrice;
+                    }, 0).toFixed(2)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
         )}
         
