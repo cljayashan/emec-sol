@@ -118,10 +118,15 @@ class Vehicle {
   }
 
   static async delete(id) {
-    await pool.execute(
-      `UPDATE vehicles SET is_deleted = 1 WHERE id = ?`,
+    const [result] = await pool.execute(
+      `UPDATE vehicles SET is_deleted = 1 WHERE id = ? AND is_deleted = 0`,
       [id]
     );
+    
+    if (result.affectedRows === 0) {
+      throw new Error('Vehicle not found or already deleted');
+    }
+    
     return true;
   }
 }

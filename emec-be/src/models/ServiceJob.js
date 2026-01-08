@@ -38,7 +38,7 @@ class ServiceJob {
     return `${prefix}${datePrefix}${String(nextNumber).padStart(3, '0')}`;
   }
 
-  static async findAll(page = 1, limit = 10, search = '') {
+  static async findAll(page = 1, limit = 10, search = '', date = null) {
     const pageNum = Math.max(1, parseInt(page) || 1);
     const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 10));
     const offset = Math.max(0, (pageNum - 1) * limitNum);
@@ -69,6 +69,11 @@ class ServiceJob {
       params.push(searchPattern, searchPattern, searchPattern);
     }
 
+    if (date) {
+      query += ` AND DATE(sj.created_at) = ?`;
+      params.push(date);
+    }
+
     query += ` ORDER BY sj.created_at DESC LIMIT ${offset}, ${limitNum}`;
 
     const [rows] = await pool.execute(query, params);
@@ -86,6 +91,11 @@ class ServiceJob {
       countQuery += ` AND (sj.job_number LIKE ? OR v.reg_no LIKE ? OR c.full_name LIKE ?)`;
       const searchPattern = `%${search}%`;
       countParams.push(searchPattern, searchPattern, searchPattern);
+    }
+
+    if (date) {
+      countQuery += ` AND DATE(sj.created_at) = ?`;
+      countParams.push(date);
     }
     
     const [count] = await pool.execute(countQuery, countParams);

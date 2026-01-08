@@ -4,6 +4,7 @@ This folder contains database migration scripts that should be run sequentially 
 
 ## Migration Files
 
+- **000_create_complete_database_innodb.sql** - Complete database creation script with all tables using InnoDB engine and all foreign keys (WARNING: Drops existing database - backup data first!)
 - **001_add_vehicle_brands.sql** - Adds vehicle_brands table and updates items table to use brand_id
 - **002_add_vehicle_models.sql** - Adds vehicle_models table with foreign key to vehicle_brands
 - **003_add_vehicles.sql** - Adds vehicles table for vehicle registration with foreign keys to vehicle_brands and vehicle_models
@@ -14,6 +15,7 @@ This folder contains database migration scripts that should be run sequentially 
 - **008_add_pre_inspection_recommendations.sql** - Adds pre_inspection_recommendations table for managing pre inspection recommendations
 - **009_add_service_jobs.sql** - Adds service_jobs table and related tables for service job management
 - **010_add_customer_foreign_keys.sql** - Adds customer_id foreign keys to vehicles and quotations tables, replacing direct customer storage
+- **011_add_vehicle_foreign_keys.sql** - Ensures all foreign key constraints exist for customer_id, brand_id, and model_id in vehicles table (NOTE: Tables must be InnoDB - MyISAM doesn't support foreign keys. Migration will verify this)
 
 ## How to Run Migrations
 

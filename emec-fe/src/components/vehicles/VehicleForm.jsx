@@ -293,11 +293,36 @@ const VehicleForm = () => {
         ? `${regPrefix} ${regNumber}`.trim()
         : regNumber || regPrefix;
       
+      // Validate required fields
+      if (!fullRegNo || !fullRegNo.trim()) {
+        toast.error('Registration number is required');
+        setLoading(false);
+        return;
+      }
+      
+      if (!values.brand_id || !values.brand_id.trim()) {
+        toast.error('Brand is required');
+        setLoading(false);
+        return;
+      }
+      
+      if (!values.model_id || !values.model_id.trim()) {
+        toast.error('Model is required');
+        setLoading(false);
+        return;
+      }
+      
       const data = {
         ...values,
-        reg_no: fullRegNo,
-        year_of_manufacture: values.year_of_manufacture ? parseInt(values.year_of_manufacture) : null,
-        year_of_registration: values.year_of_registration ? parseInt(values.year_of_registration) : null
+        reg_no: fullRegNo.trim(),
+        customer_id: values.customer_id && values.customer_id.trim() ? values.customer_id.trim() : undefined,
+        brand_id: values.brand_id.trim(),
+        model_id: values.model_id.trim(),
+        year_of_manufacture: values.year_of_manufacture ? parseInt(values.year_of_manufacture) : undefined,
+        year_of_registration: values.year_of_registration ? parseInt(values.year_of_registration) : undefined,
+        vehicle_type: values.vehicle_type && values.vehicle_type.trim() ? values.vehicle_type.trim() : undefined,
+        version: values.version && values.version.trim() ? values.version.trim() : undefined,
+        remarks: values.remarks && values.remarks.trim() ? values.remarks.trim() : undefined
       };
       
       if (isEdit) {
@@ -309,7 +334,13 @@ const VehicleForm = () => {
       }
       navigate('/vehicles');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Operation failed');
+      // Handle validation errors
+      if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+        const errorMessages = error.response.data.errors.map(err => err.msg || err.message).join(', ');
+        toast.error(errorMessages || 'Validation failed');
+      } else {
+        toast.error(error.response?.data?.message || error.response?.data?.error || 'Operation failed');
+      }
     } finally {
       setLoading(false);
     }
