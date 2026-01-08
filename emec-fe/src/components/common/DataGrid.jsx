@@ -6,7 +6,7 @@ const DataGrid = ({ columns, data, actions = [], onAction }) => {
       <thead>
         <tr>
           {columns.map((col) => (
-            <th key={col.key}>{col.label}</th>
+            <th key={col.key} style={{ textAlign: col.align || 'left' }}>{col.label}</th>
           ))}
           {actions.length > 0 && <th>Actions</th>}
         </tr>
@@ -22,8 +22,8 @@ const DataGrid = ({ columns, data, actions = [], onAction }) => {
           data.map((row, index) => (
             <tr key={row.id || index}>
               {columns.map((col) => (
-                <td key={col.key}>
-                  {col.render ? col.render(row[col.key], row) : row[col.key]}
+                <td key={col.key} style={{ textAlign: col.align || 'left' }}>
+                  {col.format ? col.format(row[col.key], row) : (col.render ? col.render(row[col.key], row) : row[col.key])}
                 </td>
               ))}
               {actions.length > 0 && (

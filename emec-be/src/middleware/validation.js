@@ -109,3 +109,8 @@ export const validateQuotation = [
   body('items').isArray().notEmpty().withMessage('At least one item is required')
 ];
 
+export const validateService = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('price').notEmpty().withMessage('Price is required').isFloat({ min: 0 }).withMessage('Price must be a valid number greater than or equal to 0'),
+  body('remarks').optional().trim()
+];

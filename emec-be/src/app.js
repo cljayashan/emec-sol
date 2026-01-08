@@ -22,6 +22,7 @@ import saleRoutes from './routes/saleRoutes.js';
 import quotationRoutes from './routes/quotationRoutes.js';
 import stockRoutes from './routes/stockRoutes.js';
 import billTemplateRoutes from './routes/billTemplateRoutes.js';
+import serviceRoutes from './routes/serviceRoutes.js';
 
 // Middleware
 import errorHandler from './middleware/errorHandler.js';
@@ -57,6 +58,7 @@ app.use('/api/sales', saleRoutes);
 app.use('/api/quotations', quotationRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/bill-templates', billTemplateRoutes);
+app.use('/api/services', serviceRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -50,6 +50,9 @@ import BillTemplateForm from './components/billTemplates/BillTemplateForm';
 import ServiceJobList from './components/serviceJobs/ServiceJobList';
 import ServiceJobForm from './components/serviceJobs/ServiceJobForm';
 import ServiceJobView from './components/serviceJobs/ServiceJobView';
+import ServiceList from './components/services/ServiceList';
+import ServiceForm from './components/services/ServiceForm';
+import ServiceView from './components/services/ServiceView';
 
 function App() {
   const { isAuthenticated, loading } = useAuth();
@@ -146,6 +149,11 @@ function App() {
                   <Route path="/service-jobs/new" element={<ServiceJobForm />} />
                   <Route path="/service-jobs/:id/edit" element={<ServiceJobForm />} />
                   <Route path="/service-jobs/:id/view" element={<ServiceJobView />} />
+                  
+                  <Route path="/services" element={<ServiceList />} />
+                  <Route path="/services/new" element={<ServiceForm />} />
+                  <Route path="/services/:id/edit" element={<ServiceForm />} />
+                  <Route path="/services/:id/view" element={<ServiceView />} />
                   
                   <Route path="/bill-templates" element={<BillTemplateForm />} />
                 </Routes>
