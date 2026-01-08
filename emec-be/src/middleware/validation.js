@@ -27,7 +27,7 @@ export const validateDeliveryPerson = [
   body('description').optional().trim()
 ];
 
-export const validateServiceType = [
+export const validateServicePackage = [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('description').optional().trim()
 ];

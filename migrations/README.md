@@ -19,6 +19,7 @@ This folder contains database migration scripts that should be run sequentially 
 - **013_add_service_job_items.sql** - Adds service_job_items table for managing parts/items that need to be replaced during service jobs, with support for labour charges
 - **014_add_purchase_sale_price_to_stock.sql** - Adds purchase_price and sale_price columns to stock table for batchwise price tracking
 - **015_add_services.sql** - Adds services table for managing services with name, price, and remarks
+- **018_rename_service_types_to_service_packages.sql** - Renames service_types table to service_packages and updates all related foreign keys, indexes, and column names (uses transactions with rollback on failure)
 
 ## How to Run Migrations
 
